@@ -8,6 +8,7 @@ const { postPanel: postCollabPanel } = require('../collabRequests');
 const { postResources } = require('../resourcesList');
 const { postPanel: postWarningAppealPanel } = require('../warningAppeals');
 const { postPanel: postSuggestionPanel } = require('../suggestions');
+const { postPanel: postLivePanel } = require('../liveNotify');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -100,6 +101,16 @@ const commands = [
     async execute(interaction) {
       await postSuggestionPanel(interaction.channel);
       await interaction.reply({ content: 'Suggestion panel posted.', ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-live-panel')
+      .setDescription('Post the TikTok live registration panel in this channel (#tiktok-live)')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postLivePanel(interaction.channel);
+      await interaction.reply({ content: 'Live notification panel posted.', ephemeral: true });
     },
   },
   {

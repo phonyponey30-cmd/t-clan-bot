@@ -8,6 +8,7 @@ const { handleTikTokInteraction } = require('./tiktokSubmit');
 const { handleCollabInteraction } = require('./collabRequests');
 const { handleWarningAppealInteraction } = require('./warningAppeals');
 const { handleSuggestionInteraction } = require('./suggestions');
+const { handleLiveInteraction, startLivePolling } = require('./liveNotify');
 const commands = require('./commands');
 
 // Minimal HTTP responder so host platforms (Railway/Render) that expect a
@@ -32,6 +33,7 @@ for (const cmd of commands) client.commands.set(cmd.data.name, cmd);
 
 client.once('ready', () => {
   console.log(`✅ ${client.user.tag} is online and guarding The T Clan.`);
+  startLivePolling(client);
 });
 
 client.on('guildMemberAdd', handleGuildMemberAdd);
@@ -79,6 +81,8 @@ client.on('interactionCreate', async (interaction) => {
       if (appealHandled) return;
       const suggestionHandled = await handleSuggestionInteraction(interaction);
       if (suggestionHandled) return;
+      const liveHandled = await handleLiveInteraction(interaction);
+      if (liveHandled) return;
     }
     if (interaction.isModalSubmit()) {
       const tiktokHandled = await handleTikTokInteraction(interaction);
@@ -89,6 +93,8 @@ client.on('interactionCreate', async (interaction) => {
       if (appealHandled) return;
       const suggestionHandled = await handleSuggestionInteraction(interaction);
       if (suggestionHandled) return;
+      const liveHandled = await handleLiveInteraction(interaction);
+      if (liveHandled) return;
     }
   } catch (err) {
     console.error(err);

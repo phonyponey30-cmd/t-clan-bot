@@ -40,6 +40,7 @@ const ROLES = [
   { name: '🎨 Content Team', color: 0x1ABC9C, permissions: [], hoist: true },
   { name: '🐣 Member', color: 0x2ECC71, permissions: [], hoist: false },
   { name: '👋 Unverified', color: 0x99AAB5, permissions: [], hoist: false },
+  { name: '🔴 Live Ping', color: 0xE0245E, permissions: [], hoist: false, mentionable: true },
 ];
 
 // name -> role config for permission overwrites below
@@ -75,6 +76,7 @@ const STRUCTURE = [
     visibility: 'members',
     channels: [
       { name: 'post-your-tiktok' },
+      { name: 'tiktok-live', topic: 'Live notifications — register your TikTok to get pinged when you go live!' },
       { name: 'feedback-and-critique' },
       { name: 'algorithm-talk' },
       { name: 'collab-requests' },
@@ -146,6 +148,7 @@ async function ensureRoles(guild) {
         color: cfg.color,
         permissions: cfg.permissions,
         hoist: cfg.hoist,
+        mentionable: !!cfg.mentionable,
         reason: 'The T Clan server setup',
       }), `create role ${cfg.name}`);
       console.log(`Created role: ${cfg.name}`);
