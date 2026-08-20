@@ -7,6 +7,7 @@ const { handleTicketInteraction } = require('./tickets');
 const { handleTikTokInteraction } = require('./tiktokSubmit');
 const { handleCollabInteraction } = require('./collabRequests');
 const { handleWarningAppealInteraction } = require('./warningAppeals');
+const { handleSuggestionInteraction } = require('./suggestions');
 const commands = require('./commands');
 
 // Minimal HTTP responder so host platforms (Railway/Render) that expect a
@@ -76,6 +77,8 @@ client.on('interactionCreate', async (interaction) => {
       if (collabHandled) return;
       const appealHandled = await handleWarningAppealInteraction(interaction);
       if (appealHandled) return;
+      const suggestionHandled = await handleSuggestionInteraction(interaction);
+      if (suggestionHandled) return;
     }
     if (interaction.isModalSubmit()) {
       const tiktokHandled = await handleTikTokInteraction(interaction);
@@ -84,6 +87,8 @@ client.on('interactionCreate', async (interaction) => {
       if (collabHandled) return;
       const appealHandled = await handleWarningAppealInteraction(interaction);
       if (appealHandled) return;
+      const suggestionHandled = await handleSuggestionInteraction(interaction);
+      if (suggestionHandled) return;
     }
   } catch (err) {
     console.error(err);

@@ -7,6 +7,7 @@ const { postPanel: postTikTokPanel } = require('../tiktokSubmit');
 const { postPanel: postCollabPanel } = require('../collabRequests');
 const { postResources } = require('../resourcesList');
 const { postPanel: postWarningAppealPanel } = require('../warningAppeals');
+const { postPanel: postSuggestionPanel } = require('../suggestions');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -89,6 +90,16 @@ const commands = [
     async execute(interaction) {
       await postWarningAppealPanel(interaction.channel);
       await interaction.reply({ content: 'Warning appeal panel posted.', ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-suggestions')
+      .setDescription('Post the "Submit a Suggestion" button in this channel (#suggestions)')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postSuggestionPanel(interaction.channel);
+      await interaction.reply({ content: 'Suggestion panel posted.', ephemeral: true });
     },
   },
   {
