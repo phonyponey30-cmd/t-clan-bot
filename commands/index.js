@@ -2,6 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('disc
 const fs = require('fs');
 const path = require('path');
 const { CONFIG, logAction } = require('../automod');
+const { postPanel } = require('../tickets');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -12,6 +13,16 @@ function saveWarnings(data) {
 }
 
 const commands = [
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-tickets')
+      .setDescription('Post the ticket panel (Complaint / Help / Report) in this channel')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postPanel(interaction.channel);
+      await interaction.reply({ content: 'Ticket panel posted.', ephemeral: true });
+    },
+  },
   {
     data: new SlashCommandBuilder()
       .setName('setup-verify')

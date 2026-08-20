@@ -3,6 +3,7 @@ const http = require('http');
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
 const { handleMessage } = require('./automod');
 const { handleGuildMemberAdd } = require('./welcome');
+const { handleTicketInteraction } = require('./tickets');
 const commands = require('./commands');
 
 // Minimal HTTP responder so host platforms (Railway/Render) that expect a
@@ -56,18 +57,24 @@ client.on('messageReactionAdd', async (reaction, user) => {
 });
 
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-  const command = client.commands.get(interaction.commandName);
-  if (!command) return;
   try {
-    await command.execute(interaction);
+    if (interaction.isChatInputCommand()) {
+      const command = client.commands.get(interaction.commandName);
+      if (!command) return;
+      await command.execute(interaction);
+      return;
+    }
+    if (interaction.isButton()) {
+      const handled = await handleTicketInteraction(interaction);
+      if (handled) return;
+    }
   } catch (err) {
     console.error(err);
-    const reply = { content: 'There was an error running that command.', ephemeral: true };
+    const reply = { content: 'There was an error handling that action.', ephemeral: true };
     if (interaction.replied || interaction.deferred) {
-      await interaction.followUp(reply);
+      await interaction.followUp(reply).catch(() => {});
     } else {
-      await interaction.reply(reply);
+      await interaction.reply(reply).catch(() => {});
     }
   }
 });
