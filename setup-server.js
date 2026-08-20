@@ -114,6 +114,7 @@ const STRUCTURE = [
       { name: 'admin-announcements' },
       { name: 'ban-appeals-review' },
       { name: 'suggestions-review' },
+      { name: 'warning-appeals-review', topic: 'Staff review queue for warning appeals — Accept/Deny.' },
     ],
   },
   {
@@ -125,6 +126,7 @@ const STRUCTURE = [
       { name: 'complaints', topic: 'File a complaint — click the button to open a private ticket.' },
       { name: 'help-support', topic: 'Get help or ask a question — click the button to open a private ticket.' },
       { name: 'create-a-ticket', topic: 'General ticket panel covering all categories.' },
+      { name: 'warning-appeals', topic: 'Think a warning was unfair? Appeal it here.' },
     ],
   },
 ];

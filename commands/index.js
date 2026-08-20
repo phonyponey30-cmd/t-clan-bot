@@ -6,6 +6,7 @@ const { postPanel, postSinglePanel, CHANNEL_TYPE_MAP } = require('../tickets');
 const { postPanel: postTikTokPanel } = require('../tiktokSubmit');
 const { postPanel: postCollabPanel } = require('../collabRequests');
 const { postResources } = require('../resourcesList');
+const { postPanel: postWarningAppealPanel } = require('../warningAppeals');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -78,6 +79,16 @@ const commands = [
     async execute(interaction) {
       await postResources(interaction.channel);
       await interaction.reply({ content: 'Resources list posted.', ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-warning-appeals')
+      .setDescription('Post the "Appeal a Warning" button in this channel (#warning-appeals)')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postWarningAppealPanel(interaction.channel);
+      await interaction.reply({ content: 'Warning appeal panel posted.', ephemeral: true });
     },
   },
   {
