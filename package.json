@@ -1,0 +1,16 @@
+{
+  "name": "t-clan-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for The T Clan TikTok community server",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "deploy-commands": "node deploy-commands.js",
+    "setup-server": "node setup-server.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5"
+  }
+}
