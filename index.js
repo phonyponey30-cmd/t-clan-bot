@@ -5,6 +5,7 @@ const { handleMessage } = require('./automod');
 const { handleGuildMemberAdd } = require('./welcome');
 const { handleTicketInteraction } = require('./tickets');
 const { handleTikTokInteraction } = require('./tiktokSubmit');
+const { handleCollabInteraction } = require('./collabRequests');
 const commands = require('./commands');
 
 // Minimal HTTP responder so host platforms (Railway/Render) that expect a
@@ -70,10 +71,14 @@ client.on('interactionCreate', async (interaction) => {
       if (handled) return;
       const tiktokHandled = await handleTikTokInteraction(interaction);
       if (tiktokHandled) return;
+      const collabHandled = await handleCollabInteraction(interaction);
+      if (collabHandled) return;
     }
     if (interaction.isModalSubmit()) {
-      await handleTikTokInteraction(interaction);
-      return;
+      const tiktokHandled = await handleTikTokInteraction(interaction);
+      if (tiktokHandled) return;
+      const collabHandled = await handleCollabInteraction(interaction);
+      if (collabHandled) return;
     }
   } catch (err) {
     console.error(err);

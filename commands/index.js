@@ -4,6 +4,7 @@ const path = require('path');
 const { CONFIG, logAction } = require('../automod');
 const { postPanel, postSinglePanel, CHANNEL_TYPE_MAP } = require('../tickets');
 const { postPanel: postTikTokPanel } = require('../tiktokSubmit');
+const { postPanel: postCollabPanel } = require('../collabRequests');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -56,6 +57,16 @@ const commands = [
     async execute(interaction) {
       await postTikTokPanel(interaction.channel);
       await interaction.reply({ content: 'TikTok submission panel posted.', ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-collab-panel')
+      .setDescription('Post the "Request a Collab" button in this channel')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postCollabPanel(interaction.channel);
+      await interaction.reply({ content: 'Collab request panel posted.', ephemeral: true });
     },
   },
   {
