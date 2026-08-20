@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { CONFIG, logAction } = require('../automod');
 const { postPanel, postSinglePanel, CHANNEL_TYPE_MAP } = require('../tickets');
+const { postPanel: postTikTokPanel } = require('../tiktokSubmit');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -45,6 +46,16 @@ const commands = [
       if (posted.length) parts.push(`✅ Posted in: ${posted.map(n => `#${n}`).join(', ')}`);
       if (missing.length) parts.push(`⚠️ Channel(s) not found: ${missing.map(n => `#${n}`).join(', ')} — run npm run setup-server first.`);
       await interaction.reply({ content: parts.join('\n'), ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-tiktok-panel')
+      .setDescription('Post the "Submit Your TikTok" button in this channel')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postTikTokPanel(interaction.channel);
+      await interaction.reply({ content: 'TikTok submission panel posted.', ephemeral: true });
     },
   },
   {
