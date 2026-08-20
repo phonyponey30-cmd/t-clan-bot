@@ -48,6 +48,38 @@ async function postPanel(channel) {
   await channel.send({ embeds: [buildPanelEmbed()], components: [buildPanelRow()] });
 }
 
+function buildSinglePanelEmbed(typeKey) {
+  const type = TICKET_TYPES[typeKey];
+  const descriptions = {
+    complaint: 'Have an issue with a member, staff decision, or the server? Click below to open a private complaint ticket with staff.',
+    help: 'Need help or have a question? Click below to open a private support ticket with staff.',
+    report: 'Report rule-breaking behavior. Click below to open a private ticket with staff — include usernames, links, or screenshots if you have them.',
+  };
+  return new EmbedBuilder()
+    .setTitle(`${type.label}`)
+    .setDescription(descriptions[typeKey] || 'Click below to open a ticket.')
+    .setColor(0x3498DB);
+}
+
+function buildSinglePanelRow(typeKey) {
+  const type = TICKET_TYPES[typeKey];
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`ticket_open_${typeKey}`).setLabel(type.label).setStyle(type.style)
+  );
+}
+
+async function postSinglePanel(channel, typeKey) {
+  if (!TICKET_TYPES[typeKey]) throw new Error(`Unknown ticket type: ${typeKey}`);
+  await channel.send({ embeds: [buildSinglePanelEmbed(typeKey)], components: [buildSinglePanelRow(typeKey)] });
+}
+
+// Maps existing Support-category channel names to the ticket type they should open.
+const CHANNEL_TYPE_MAP = {
+  'report-a-user': 'report',
+  'complaints': 'complaint',
+  'help-support': 'help',
+};
+
 function staffOverwrites(guild) {
   return STAFF_ROLE_NAMES
     .map(name => guild.roles.cache.find(r => r.name === name))
@@ -205,4 +237,4 @@ async function handleTicketInteraction(interaction) {
   return false;
 }
 
-module.exports = { postPanel, handleTicketInteraction };
+module.exports = { postPanel, postSinglePanel, CHANNEL_TYPE_MAP, handleTicketInteraction };

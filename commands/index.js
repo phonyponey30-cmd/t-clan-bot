@@ -2,7 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('disc
 const fs = require('fs');
 const path = require('path');
 const { CONFIG, logAction } = require('../automod');
-const { postPanel } = require('../tickets');
+const { postPanel, postSinglePanel, CHANNEL_TYPE_MAP } = require('../tickets');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -21,6 +21,30 @@ const commands = [
     async execute(interaction) {
       await postPanel(interaction.channel);
       await interaction.reply({ content: 'Ticket panel posted.', ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-support-channels')
+      .setDescription('Post dedicated ticket panels in #report-a-user, #complaints, and #help-support')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      const guild = interaction.guild;
+      const posted = [];
+      const missing = [];
+      for (const [channelName, typeKey] of Object.entries(CHANNEL_TYPE_MAP)) {
+        const channel = guild.channels.cache.find(c => c.name === channelName);
+        if (!channel) {
+          missing.push(channelName);
+          continue;
+        }
+        await postSinglePanel(channel, typeKey);
+        posted.push(channelName);
+      }
+      const parts = [];
+      if (posted.length) parts.push(`✅ Posted in: ${posted.map(n => `#${n}`).join(', ')}`);
+      if (missing.length) parts.push(`⚠️ Channel(s) not found: ${missing.map(n => `#${n}`).join(', ')} — run npm run setup-server first.`);
+      await interaction.reply({ content: parts.join('\n'), ephemeral: true });
     },
   },
   {
