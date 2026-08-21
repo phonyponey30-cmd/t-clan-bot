@@ -11,6 +11,7 @@ const { postPanel: postSuggestionPanel } = require('../suggestions');
 const { postPanel: postLivePanel } = require('../liveNotify');
 const { postPanel: postEditingHelpPanel } = require('../editingHelp');
 const { postToolsList } = require('../toolsAppsList');
+const { postGrowthTips } = require('../growthTips');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -133,6 +134,16 @@ const commands = [
     async execute(interaction) {
       await postToolsList(interaction.channel);
       await interaction.reply({ content: 'Tools & apps list posted.', ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('post-growth-tips')
+      .setDescription('Post the comprehensive growth tips list in this channel (#growth-tips)')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postGrowthTips(interaction.channel);
+      await interaction.reply({ content: 'Growth tips posted.', ephemeral: true });
     },
   },
   {
