@@ -99,6 +99,14 @@ const STRUCTURE = [
     ],
   },
   {
+    category: '🏆 LEVELS',
+    visibility: 'members',
+    channels: [
+      { name: 'rank-check', topic: 'Run /rank to see your level, XP, and position. Reach level 1000 to earn VIP!' },
+      { name: 'leaderboard', readonly: true, topic: 'Top members by XP — updates automatically every 5 minutes.' },
+    ],
+  },
+  {
     category: '⭐ VIP',
     visibility: 'vip',
     channels: [

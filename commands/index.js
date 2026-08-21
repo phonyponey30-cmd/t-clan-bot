@@ -12,6 +12,7 @@ const { postPanel: postLivePanel } = require('../liveNotify');
 const { postPanel: postEditingHelpPanel } = require('../editingHelp');
 const { postToolsList } = require('../toolsAppsList');
 const { postGrowthTips } = require('../growthTips');
+const { getRank, initLeaderboard, MAX_LEVEL } = require('../leveling');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -144,6 +145,46 @@ const commands = [
     async execute(interaction) {
       await postGrowthTips(interaction.channel);
       await interaction.reply({ content: 'Growth tips posted.', ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('rank')
+      .setDescription('Check your (or another member\'s) level, XP, and leaderboard position')
+      .addUserOption(o => o.setName('user').setDescription('User to check (defaults to you)').setRequired(false)),
+    async execute(interaction) {
+      const user = interaction.options.getUser('user') || interaction.user;
+      const rank = getRank(user.id);
+      if (!rank) {
+        await interaction.reply({ content: `${user.id === interaction.user.id ? 'You haven\'t' : `${user.username} hasn't`} earned any XP yet — start chatting!`, ephemeral: true });
+        return;
+      }
+      const progressBarLength = 20;
+      const pct = rank.xpNeededForLevel > 0 ? rank.xpIntoLevel / rank.xpNeededForLevel : 1;
+      const filled = Math.round(pct * progressBarLength);
+      const bar = '█'.repeat(filled) + '░'.repeat(progressBarLength - filled);
+
+      const embed = new EmbedBuilder()
+        .setTitle(`📊 Rank — ${user.tag}`)
+        .addFields(
+          { name: 'Level', value: `${rank.level} / ${MAX_LEVEL}`, inline: true },
+          { name: 'Total XP', value: rank.xp.toLocaleString(), inline: true },
+          { name: 'Server Rank', value: `#${rank.position} of ${rank.total}`, inline: true },
+          { name: 'Progress to next level', value: `${bar}\n${rank.xpIntoLevel.toLocaleString()} / ${rank.xpNeededForLevel.toLocaleString()} XP` },
+        )
+        .setColor(0xFFD700)
+        .setThumbnail(user.displayAvatarURL());
+      await interaction.reply({ embeds: [embed] });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-leaderboard')
+      .setDescription('Post the self-updating leaderboard in this channel (#leaderboard)')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await initLeaderboard(interaction.channel);
+      await interaction.reply({ content: 'Leaderboard posted — it will auto-refresh every 5 minutes.', ephemeral: true });
     },
   },
   {

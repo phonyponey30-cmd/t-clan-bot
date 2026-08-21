@@ -10,6 +10,7 @@ const { handleWarningAppealInteraction } = require('./warningAppeals');
 const { handleSuggestionInteraction } = require('./suggestions');
 const { handleLiveInteraction, startLivePolling } = require('./liveNotify');
 const { handleEditingHelpInteraction } = require('./editingHelp');
+const { handleMessageXp, startLeaderboardUpdater } = require('./leveling');
 const commands = require('./commands');
 
 // Minimal HTTP responder so host platforms (Railway/Render) that expect a
@@ -35,12 +36,14 @@ for (const cmd of commands) client.commands.set(cmd.data.name, cmd);
 client.once('ready', () => {
   console.log(`✅ ${client.user.tag} is online and guarding The T Clan.`);
   startLivePolling(client);
+  startLeaderboardUpdater(client);
 });
 
 client.on('guildMemberAdd', handleGuildMemberAdd);
 
 client.on('messageCreate', (message) => {
   handleMessage(message).catch(console.error);
+  handleMessageXp(message).catch(console.error);
 });
 
 // Reaction-role verification: react ✅ in #verify to get the Member role
