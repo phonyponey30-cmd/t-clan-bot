@@ -10,7 +10,7 @@ const { handleWarningAppealInteraction } = require('./warningAppeals');
 const { handleSuggestionInteraction } = require('./suggestions');
 const { handleLiveInteraction, startLivePolling } = require('./liveNotify');
 const { handleEditingHelpInteraction } = require('./editingHelp');
-const { handleMessageXp, startLeaderboardUpdater } = require('./leveling');
+const { handleMessageXp, startLeaderboardUpdater, handleRankCheckInteraction } = require('./leveling');
 const commands = require('./commands');
 
 // Minimal HTTP responder so host platforms (Railway/Render) that expect a
@@ -89,6 +89,8 @@ client.on('interactionCreate', async (interaction) => {
       if (liveHandled) return;
       const editHelpHandled = await handleEditingHelpInteraction(interaction);
       if (editHelpHandled) return;
+      const rankHandled = await handleRankCheckInteraction(interaction);
+      if (rankHandled) return;
     }
     if (interaction.isModalSubmit()) {
       const tiktokHandled = await handleTikTokInteraction(interaction);

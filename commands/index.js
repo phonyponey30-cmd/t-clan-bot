@@ -12,7 +12,7 @@ const { postPanel: postLivePanel } = require('../liveNotify');
 const { postPanel: postEditingHelpPanel } = require('../editingHelp');
 const { postToolsList } = require('../toolsAppsList');
 const { postGrowthTips } = require('../growthTips');
-const { getRank, initLeaderboard, MAX_LEVEL } = require('../leveling');
+const { getRank, initLeaderboard, MAX_LEVEL, buildRankEmbed, postRankCheckPanel } = require('../leveling');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -159,22 +159,17 @@ const commands = [
         await interaction.reply({ content: `${user.id === interaction.user.id ? 'You haven\'t' : `${user.username} hasn't`} earned any XP yet — start chatting!`, ephemeral: true });
         return;
       }
-      const progressBarLength = 20;
-      const pct = rank.xpNeededForLevel > 0 ? rank.xpIntoLevel / rank.xpNeededForLevel : 1;
-      const filled = Math.round(pct * progressBarLength);
-      const bar = '█'.repeat(filled) + '░'.repeat(progressBarLength - filled);
-
-      const embed = new EmbedBuilder()
-        .setTitle(`📊 Rank — ${user.tag}`)
-        .addFields(
-          { name: 'Level', value: `${rank.level} / ${MAX_LEVEL}`, inline: true },
-          { name: 'Total XP', value: rank.xp.toLocaleString(), inline: true },
-          { name: 'Server Rank', value: `#${rank.position} of ${rank.total}`, inline: true },
-          { name: 'Progress to next level', value: `${bar}\n${rank.xpIntoLevel.toLocaleString()} / ${rank.xpNeededForLevel.toLocaleString()} XP` },
-        )
-        .setColor(0xFFD700)
-        .setThumbnail(user.displayAvatarURL());
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [buildRankEmbed(user, rank)] });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-rank-panel')
+      .setDescription('Post the "Check My Rank" button panel in this channel (#rank-check)')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postRankCheckPanel(interaction.channel);
+      await interaction.reply({ content: 'Rank check panel posted.', ephemeral: true });
     },
   },
   {

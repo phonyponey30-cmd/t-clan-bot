@@ -2,7 +2,7 @@
 // level up over time, and reaching level 1000 automatically grants the ⭐ VIP role.
 // The leaderboard channel self-updates by editing one pinned embed every 5 minutes.
 
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -80,6 +80,54 @@ async function handleMessageXp(message) {
   }
 }
 
+function buildRankEmbed(user, rank) {
+  const progressBarLength = 20;
+  const pct = rank.xpNeededForLevel > 0 ? rank.xpIntoLevel / rank.xpNeededForLevel : 1;
+  const filled = Math.round(pct * progressBarLength);
+  const bar = '█'.repeat(filled) + '░'.repeat(progressBarLength - filled);
+
+  return new EmbedBuilder()
+    .setTitle(`📊 Rank — ${user.tag}`)
+    .addFields(
+      { name: 'Level', value: `${rank.level} / ${MAX_LEVEL}`, inline: true },
+      { name: 'Total XP', value: rank.xp.toLocaleString(), inline: true },
+      { name: 'Server Rank', value: `#${rank.position} of ${rank.total}`, inline: true },
+      { name: 'Progress to next level', value: `${bar}\n${rank.xpIntoLevel.toLocaleString()} / ${rank.xpNeededForLevel.toLocaleString()} XP` },
+    )
+    .setColor(0xFFD700)
+    .setThumbnail(user.displayAvatarURL());
+}
+
+function buildRankPanelEmbed() {
+  return new EmbedBuilder()
+    .setTitle('📊 Check Your Rank')
+    .setDescription('Click below to instantly see your level, XP, and position on the leaderboard.')
+    .setColor(0xFFD700);
+}
+
+function buildRankPanelRow() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('rank_check_button').setLabel('Check My Rank').setEmoji('📊').setStyle(ButtonStyle.Primary)
+  );
+}
+
+async function postRankCheckPanel(channel) {
+  await channel.send({ embeds: [buildRankPanelEmbed()], components: [buildRankPanelRow()] });
+}
+
+async function handleRankCheckInteraction(interaction) {
+  if (!interaction.isButton() || interaction.customId !== 'rank_check_button') return false;
+
+  const rank = getRank(interaction.user.id);
+  if (!rank) {
+    await interaction.reply({ content: 'You haven\'t earned any XP yet — start chatting!', ephemeral: true });
+    return true;
+  }
+
+  await interaction.reply({ embeds: [buildRankEmbed(interaction.user, rank)], ephemeral: true });
+  return true;
+}
+
 function getRank(userId) {
   const levels = loadJson(levelsPath);
   const record = levels[userId];
@@ -146,4 +194,5 @@ function startLeaderboardUpdater(client) {
 module.exports = {
   handleMessageXp, getRank, buildLeaderboardEmbed, initLeaderboard,
   startLeaderboardUpdater, MAX_LEVEL, xpProgress,
+  buildRankEmbed, postRankCheckPanel, handleRankCheckInteraction,
 };
