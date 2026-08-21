@@ -9,6 +9,7 @@ const { postResources } = require('../resourcesList');
 const { postPanel: postWarningAppealPanel } = require('../warningAppeals');
 const { postPanel: postSuggestionPanel } = require('../suggestions');
 const { postPanel: postLivePanel } = require('../liveNotify');
+const { postPanel: postEditingHelpPanel } = require('../editingHelp');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -111,6 +112,16 @@ const commands = [
     async execute(interaction) {
       await postLivePanel(interaction.channel);
       await interaction.reply({ content: 'Live notification panel posted.', ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('setup-editing-help')
+      .setDescription('Post the "Request Editing Help" button in this channel (#editing-help)')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postEditingHelpPanel(interaction.channel);
+      await interaction.reply({ content: 'Editing help panel posted.', ephemeral: true });
     },
   },
   {
