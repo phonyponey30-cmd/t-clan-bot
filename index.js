@@ -59,7 +59,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
   const member = await guild.members.fetch(user.id).catch(() => null);
   if (!member) return;
 
-  const memberRole = guild.roles.cache.find(r => r.name === '🐣 Member');
+  const memberRole = guild.roles.cache.find(r => r.name === '📋 Recruit' || r.name === '🐣 Member');
   const unverifiedRole = guild.roles.cache.find(r => r.name === '👋 Unverified');
 
   if (memberRole) await member.roles.add(memberRole).catch(() => {});

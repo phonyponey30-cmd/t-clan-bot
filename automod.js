@@ -78,7 +78,10 @@ async function escalate(member, reason, guild) {
 }
 
 function isStaff(member) {
-  return member.roles.cache.some(r => ['🛡️ Admin', '🔨 Moderator', '👑 Founder'].includes(r.name));
+  return member.roles.cache.some(r => [
+    '🛡️ Admin', '🔨 Moderator', '👑 Founder',
+    '⭐ Commanding Officer', '🎖️ Command Staff', '🪖 NCO',
+  ].includes(r.name));
 }
 
 async function handleMessage(message) {
