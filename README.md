@@ -3,9 +3,11 @@
 A full working bot that builds and moderates your server: [discord.gg/KG4b6n8ZdC](https://discord.gg/KG4b6n8ZdC)
 
 ## What it does
-- **`npm run setup-server`** — one-time script that creates all roles, categories, and channels automatically.
-- **Welcome messages** — new members get an embed welcome in `#welcome` and are put in `👋 Unverified`.
-- **Verification gate** — `/setup-verify` posts a reaction message in `#verify`; reacting ✅ grants the `🐣 Member` role and removes `Unverified`.
+- **`npm run setup-server`** — builds the original T Clan (TikTok community) server.
+- **`npm run setup-tf14`** — one-time script that builds the **Task Force 14 milsim server**: roles (Commanding Officer, Command Staff, NCO, Team Lead, Operator, Recruit, Applicant), and categories/channels for intake, command, squad room, training, staff, and support, plus a Comms voice category.
+- **Welcome messages** — new members get a milsim-themed embed welcome in `#welcome` and are put in `👋 Unverified`.
+- **Verification gate** — `/setup-verify` posts a reaction message in `#verify`; reacting ✅ grants the `📋 Recruit` role and removes `Unverified`.
+- **Rules & Lore embeds, ready to go** — `/post-rules` posts the full TF14 Rules of Engagement in `#rules`; `/post-lore` posts the TF14 backstory/lore briefing in `#lore`.
 - **Auto-mod** — deletes invite spam, scam keywords, non-whitelisted links, mass mentions, caps spam, and duplicate/flood spam. Escalates: warn → 1hr timeout → 24hr timeout → kick → ban. Every action logs to `#mod-logs` and `#automod-dashboard`.
 - **Mod commands** — `/warn`, `/warnings`, `/clearwarnings`, `/mute`, `/automod-dashboard`.
 
@@ -37,9 +39,10 @@ Edit `.env` and fill in `DISCORD_TOKEN`, `CLIENT_ID`, `GUILD_ID`.
 ### 4. Install and build the server
 ```bash
 npm install
-npm run setup-server
+npm run setup-tf14
 ```
-This creates every role/category/channel from the blueprint. Safe to re-run.
+This creates every TF14 role/category/channel from the blueprint. Safe to re-run.
+(Use `npm run setup-server` instead if you want the original T Clan TikTok layout.)
 
 ### 5. Deploy slash commands
 ```bash
@@ -54,11 +57,14 @@ Keep this running (use a process manager like `pm2`, or host it on a VPS/Railway
 
 ### 7. Finish setup in Discord
 - Run `/setup-verify` inside `#verify`.
-- Move the bot's own role above `👋 Unverified`/`🐣 Member` in Server Settings → Roles (Discord requires a bot's role to be higher than roles it assigns/removes).
-- Optionally also enable Discord's **native AutoMod** (Server Settings → Safety Setup) as a second layer — see `the-t-clan-discord-blueprint.md` for exact filter settings.
+- Run `/post-rules` inside `#rules` and `/post-lore` inside `#lore`.
+- Move the bot's own role above `👋 Unverified`/`📋 Recruit` in Server Settings → Roles (Discord requires a bot's role to be higher than roles it assigns/removes).
+- Optionally also enable Discord's **native AutoMod** (Server Settings → Safety Setup) as a second layer.
 
 ## Files
-- `setup-server.js` — builds roles/categories/channels
+- `setup-server-tf14.js` — builds the TF14 milsim roles/categories/channels
+- `setup-server.js` — builds the original T Clan roles/categories/channels
+- `tf14Content.js` — TF14 rules, lore, and welcome embed builders
 - `index.js` — main bot process (welcome, automod, verification, commands)
 - `automod.js` — auto-mod filter logic + warning escalation
 - `welcome.js` — join handler

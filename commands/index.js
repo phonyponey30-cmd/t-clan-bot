@@ -13,6 +13,7 @@ const { postPanel: postEditingHelpPanel } = require('../editingHelp');
 const { postToolsList } = require('../toolsAppsList');
 const { postGrowthTips } = require('../growthTips');
 const { getRank, initLeaderboard, MAX_LEVEL, buildRankEmbed, postRankCheckPanel } = require('../leveling');
+const { postRules, postLore } = require('../tf14Content');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -189,8 +190,8 @@ const commands = [
       .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
     async execute(interaction) {
       const embed = new EmbedBuilder()
-        .setTitle('✅ Verify to unlock The T Clan')
-        .setDescription('React with ✅ below to confirm you have read the rules and gain full access to the server.')
+        .setTitle('✅ Verify to unlock Task Force 14')
+        .setDescription('React with ✅ below to confirm you have read the Rules of Engagement and gain full access to the server.')
         .setColor(0x2ECC71);
       const msg = await interaction.channel.send({ embeds: [embed] });
       await msg.react('✅');
@@ -263,6 +264,26 @@ const commands = [
         )
         .setTimestamp();
       await interaction.reply({ embeds: [embed] });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('post-rules')
+      .setDescription('Post the TF14 Rules of Engagement embed in this channel (#rules)')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postRules(interaction.channel);
+      await interaction.reply({ content: 'Rules posted.', ephemeral: true });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('post-lore')
+      .setDescription('Post the TF14 lore/backstory embed in this channel (#lore)')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      await postLore(interaction.channel);
+      await interaction.reply({ content: 'Lore posted.', ephemeral: true });
     },
   },
   {
