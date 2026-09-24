@@ -13,6 +13,7 @@ const { postPanel: postEditingHelpPanel } = require('../editingHelp');
 const { postToolsList } = require('../toolsAppsList');
 const { postGrowthTips } = require('../growthTips');
 const { getRank, initLeaderboard, MAX_LEVEL, buildRankEmbed, postRankCheckPanel } = require('../leveling');
+const { PASS_SCORE, MAX_SCORE, recordScore, getRecord, clearRecord, buildRecordEmbed, buildSheetEmbed } = require('../bctRecords');
 
 const warningsPath = path.join(__dirname, '..', 'data', 'warnings.json');
 function loadWarnings() {
@@ -285,6 +286,60 @@ const commands = [
         color: 0xE67E22,
       });
       await interaction.reply(`🔇 ${user} has been muted for ${minutes} minutes.`);
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('bct-record')
+      .setDescription('Record a recruit\'s Arma3 BCT score')
+      .addUserOption(o => o.setName('recruit').setDescription('The recruit').setRequired(true))
+      .addIntegerOption(o => o.setName('score').setDescription(`Score out of ${MAX_SCORE}`).setRequired(true).setMinValue(0).setMaxValue(MAX_SCORE))
+      .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+    async execute(interaction) {
+      const recruit = interaction.options.getUser('recruit');
+      const score = interaction.options.getInteger('score');
+      const record = recordScore({
+        userId: recruit.id,
+        recruitName: recruit.username,
+        score,
+        graderId: interaction.user.id,
+      });
+      await interaction.reply({ embeds: [buildRecordEmbed(record)] });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('bct-check')
+      .setDescription('Check a recruit\'s Arma3 BCT record')
+      .addUserOption(o => o.setName('recruit').setDescription('The recruit').setRequired(true)),
+    async execute(interaction) {
+      const recruit = interaction.options.getUser('recruit');
+      const record = getRecord(recruit.id);
+      if (!record) {
+        await interaction.reply({ content: `No BCT record found for ${recruit}.`, ephemeral: true });
+        return;
+      }
+      await interaction.reply({ embeds: [buildRecordEmbed(record)] });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('bct-sheet')
+      .setDescription(`Post the full Arma3 BCT record sheet (passing score: ${PASS_SCORE}/${MAX_SCORE})`),
+    async execute(interaction) {
+      await interaction.reply({ embeds: [buildSheetEmbed()] });
+    },
+  },
+  {
+    data: new SlashCommandBuilder()
+      .setName('bct-clear')
+      .setDescription('Clear a recruit\'s Arma3 BCT record')
+      .addUserOption(o => o.setName('recruit').setDescription('The recruit').setRequired(true))
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    async execute(interaction) {
+      const recruit = interaction.options.getUser('recruit');
+      clearRecord(recruit.id);
+      await interaction.reply(`✅ BCT record cleared for ${recruit}.`);
     },
   },
 ];
