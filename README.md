@@ -8,6 +8,7 @@ A full working bot that builds and moderates your server: [discord.gg/KG4b6n8ZdC
 - **Verification gate** — `/setup-verify` posts a reaction message in `#verify`; reacting ✅ grants the `🐣 Member` role and removes `Unverified`.
 - **Auto-mod** — deletes invite spam, scam keywords, non-whitelisted links, mass mentions, caps spam, and duplicate/flood spam. Escalates: warn → 1hr timeout → 24hr timeout → kick → ban. Every action logs to `#mod-logs` and `#automod-dashboard`.
 - **Mod commands** — `/warn`, `/warnings`, `/clearwarnings`, `/mute`, `/automod-dashboard`.
+- **Arma3 BCT record sheet** — `/bct-record` logs a recruit's Basic Combat Training score out of 100 (85+ is a pass), `/bct-check` looks up a recruit's result, `/bct-sheet` posts the full roster sorted by score, `/bct-clear` removes a record.
 
 ## Setup (do this yourself — I can't hold your bot token)
 
