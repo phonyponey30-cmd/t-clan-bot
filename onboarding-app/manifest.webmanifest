@@ -1,0 +1,12 @@
+{
+  "name": "T Clan Welcome",
+  "short_name": "T Clan",
+  "description": "Join The T Clan on Discord the safe and easy way.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f4fc",
+  "theme_color": "#6d3fc0",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

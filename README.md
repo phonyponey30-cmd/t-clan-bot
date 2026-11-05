@@ -67,3 +67,11 @@ Keep this running (use a process manager like `pm2`, or host it on a VPS/Railway
 
 ## Customizing filters
 Edit `CONFIG` at the top of `automod.js`: mention limits, caps threshold, banned keywords, allowed link domains, duplicate-spam thresholds.
+
+## Onboarding app (phone-friendly, teen + adult + parent)
+`onboarding-app/` is an installable mobile web app (PWA) that walks new members through joining the server safely.
+- **Audience paths:** 18+, 13–17 (extra safety steps), parent/guardian guide, and a friendly stop screen for under-13s (Discord requires 13+).
+- **Steps:** get Discord → join → rules → verify → safety settings → channel tour → intro message → done.
+- **Privacy:** no accounts, no analytics, no personal data collected. Progress is saved only in the device's `localStorage`.
+- **Run locally:** `npx serve onboarding-app` (or any static host such as GitHub Pages, Netlify, Cloudflare Pages), then open it on a phone and use *Add to Home Screen*.
+- Edit rules, channel tour, and invite link at the top of `onboarding-app/app.js`.
