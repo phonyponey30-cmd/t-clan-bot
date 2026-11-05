@@ -1,5 +1,5 @@
 'use strict';
-const INVITE = 'https://discord.gg/KG4b6n8ZdC';
+const INVITE = 'https://discord.gg/q4pMAjQqNQ';
 const STEPS = ['get', 'join', 'rules', 'verify', 'safety', 'tour', 'hello', 'done'];
 const $main = document.getElementById('main');
 const $top = document.getElementById('top');
@@ -112,7 +112,7 @@ S.join = () => `
   <h2>2. Join the server</h2>
   <p>Tap the button. Discord opens and asks you to accept the invite.</p>
   <a class="btn" href="${INVITE}" target="_blank" rel="noopener">Join The T Clan ↗</a>
-  <p class="muted">Invite link: <code>discord.gg/KG4b6n8ZdC</code>. Only trust this exact link. Staff will never DM you a different one.</p>
+  <p class="muted">Invite link: <code>${INVITE.replace('https://', '')}</code>. Only trust this exact link. Staff will never DM you a different one.</p>
   <label class="check"><input type="checkbox" data-check="joined"><span>I joined and can see the server</span></label>
   ${next('join', 'joined')}`;
 

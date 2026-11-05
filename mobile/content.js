@@ -1,5 +1,5 @@
 // All editable copy lives here. Wrap text in `backticks` for channel/code style and **double stars** for bold.
-export const INVITE = 'https://discord.gg/KG4b6n8ZdC';
+export const INVITE = 'https://discord.gg/q4pMAjQqNQ';
 
 export const RULES = {
   common: [

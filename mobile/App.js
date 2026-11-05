@@ -212,7 +212,7 @@ function Main() {
       <Text style={st.h2} accessibilityRole="header">2. Join the server</Text>
       <Text style={st.p}>Tap the button. Discord opens and asks you to accept the invite.</Text>
       <Btn st={st} label="Join The T Clan ↗" onPress={() => openUrl(INVITE)} />
-      <Rich style={st.muted} c={c}>{'Invite link: `discord.gg/KG4b6n8ZdC`. Only trust this exact link. Staff will never DM you a different one.'}</Rich>
+      <Rich style={st.muted} c={c}>{`Invite link: \`${INVITE.replace('https://', '')}\`. Only trust this exact link. Staff will never DM you a different one.`}</Rich>
       <Check st={st} c={c} on={!!checks.joined} onToggle={() => toggle('joined')} label="I joined and can see the server" />
       <ChecksNext keys={['joined']} />
     </>),
