@@ -69,6 +69,8 @@ Keep this running (use a process manager like `pm2`, or host it on a VPS/Railway
 Edit `CONFIG` at the top of `automod.js`: mention limits, caps threshold, banned keywords, allowed link domains, duplicate-spam thresholds.
 
 ## Onboarding app (phone-friendly, teen + adult + parent)
+> **Native version:** see [`mobile/`](mobile/README.md) (Expo / React Native, iOS + Android). The web app below is a lightweight alternative.
+
 `onboarding-app/` is an installable mobile web app (PWA) that walks new members through joining the server safely.
 - **Audience paths:** 18+, 13–17 (extra safety steps), parent/guardian guide, and a friendly stop screen for under-13s (Discord requires 13+).
 - **Steps:** get Discord → join → rules → verify → safety settings → channel tour → intro message → done.
