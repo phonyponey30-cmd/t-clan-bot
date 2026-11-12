@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stationeers Base Designer</title>
+<style>
+:root{--bg:#0f1318;--panel:#171c23;--panel2:#1e242d;--line:#2b3340;--txt:#d7dde6;--mut:#8592a3;--acc:#f5a524;--ok:#4cc38a;--warn:#f5a524;--bad:#ef5b5b}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:13px/1.4 system-ui,Segoe UI,Roboto,sans-serif}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer}
+button:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#111;border-color:var(--acc)}
+input[type=number],input[type=search],select{background:#0c1015;border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+#app{display:grid;grid-template-rows:auto 1fr;height:100vh}
+header{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:15px;margin:0 8px 0 0;color:var(--acc);white-space:nowrap}
+.grp{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.sep{width:1px;height:22px;background:var(--line)}
+label.chk{display:flex;gap:3px;align-items:center;color:var(--mut);cursor:pointer}
+main{display:grid;grid-template-columns:250px 1fr 340px;min-height:0}
+aside{background:var(--panel);overflow:auto;min-height:0}
+#left{border-right:1px solid var(--line)}
+#right{border-left:1px solid var(--line)}
+#stage{position:relative;min-width:0;min-height:0;overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+#hud{position:absolute;left:8px;bottom:8px;background:#000a;padding:3px 8px;border-radius:6px;color:var(--mut);pointer-events:none}
+.cat{padding:6px 10px 2px;color:var(--mut);text-transform:uppercase;font-size:11px;letter-spacing:.06em;position:sticky;top:0;background:var(--panel)}
+.item{display:flex;gap:8px;align-items:center;padding:4px 10px;cursor:pointer;border-left:3px solid transparent}
+.item:hover{background:var(--panel2)}
+.item.sel{background:var(--panel2);border-left-color:var(--acc)}
+.sw{width:26px;height:26px;border-radius:5px;display:grid;place-items:center;font:700 10px monospace;color:#111;flex:none;border:1px solid #0006}
+.item .nm{flex:1}
+.item .w{font-size:11px;color:var(--mut)}
+.w.gen{color:var(--ok)}
+#search{width:calc(100% - 20px);margin:8px 10px}
+.tabs{display:flex;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.tabs button{flex:1;border:0;border-radius:0;background:none;padding:8px}
+.tabs button.on{background:var(--panel2);color:var(--acc);border-bottom:2px solid var(--acc)}
+.pane{padding:10px}
+.pane h3{margin:12px 0 6px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+.pane h3:first-child{margin-top:0}
+.row{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
+.row span:first-child{color:var(--mut)}
+.ck{display:flex;gap:8px;padding:3px 0}
+.ck i{font-style:normal;width:16px;text-align:center;font-weight:700}
+.ck.ok i{color:var(--ok)}.ck.no i{color:var(--bad)}.ck.opt i{color:var(--mut)}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px;margin-bottom:8px}
+.bar{height:8px;background:#0c1015;border-radius:4px;overflow:hidden;margin:4px 0}
+.bar b{display:block;height:100%}
+.iss{display:flex;gap:6px;padding:4px 6px;margin-bottom:4px;border-radius:6px;background:var(--panel2);cursor:pointer;border-left:3px solid var(--mut)}
+.iss.bad{border-left-color:var(--bad)}.iss.warn{border-left-color:var(--warn)}
+.muted{color:var(--mut)}
+table{border-collapse:collapse;width:100%}
+td,th{padding:3px 6px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:500}
+td.n,th.n{text-align:right}
+dialog{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:10px;max-width:640px;width:94vw;max-height:84vh;padding:0}
+dialog::backdrop{background:#000a}
+dialog .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+dialog .bd{padding:10px 14px;overflow:auto;max-height:62vh}
+dialog input[type=number]{width:110px}
+.banner{background:#3a2c0f;color:#f2cf8a;border:1px solid #6b4e12;border-radius:6px;padding:6px 8px;margin-bottom:8px;font-size:12px}
+@media (max-width:900px){main{grid-template-columns:1fr;grid-template-rows:200px 60vh auto}#left{border-right:0}#right{border-left:0}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <h1>⛭ Stationeers Base Designer</h1>
+  <div class="grp" id="tools"></div>
+  <div class="sep"></div>
+  <div class="grp">
+    <button id="undo" title="Ctrl+Z">Undo</button><button id="redo" title="Ctrl+Y">Redo</button>
+    <button id="rot" title="R">Rotate ⟳</button>
+  </div>
+  <div class="sep"></div>
+  <div class="grp" id="layerToggles"></div>
+  <div class="grp">Overlay
+    <select id="overlay"><option value="none">None</option><option value="rooms">Rooms / atmosphere</option><option value="power">Power networks</option><option value="gas">Gas networks</option></select>
+  </div>
+  <div class="sep"></div>
+  <div class="grp" id="levelTabs"></div>
+  <div class="sep"></div>
+  <div class="grp">
+    <button id="starter">Starter base</button>
+    <button id="clear">Clear</button>
+    <button id="save">Save</button>
+    <button id="load">Load</button>
+    <button id="png">PNG</button>
+    <button id="catalog">Catalog values</button>
+    <button id="help">?</button>
+    <input type="file" id="file" accept=".json" hidden>
+  </div>
+</header>
+<main>
+  <aside id="left"><input id="search" type="search" placeholder="Search parts…"><div id="palette"></div></aside>
+  <div id="stage"><canvas id="cv"></canvas><div id="hud"></div></div>
+  <aside id="right">
+    <div class="tabs"><button data-t="insp" class="on">Inspect</button><button data-t="ana">Analysis</button><button data-t="bom">Parts list</button></div>
+    <div class="pane" id="pane"></div>
+  </aside>
+</main>
+</div>
+
+<dialog id="dlgCat"><div class="hd"><b>Catalog values</b><button onclick="this.closest('dialog').close()">Close</button></div>
+<div class="bd"><div class="banner">Wattages and cable ratings below are my best approximations, not read from the game files. Check them against the in-game tooltips and edit here — everything in the analysis uses these numbers.</div><div id="catBody"></div></div></dialog>
+
+<dialog id="dlgHelp"><div class="hd"><b>How to use</b><button onclick="this.closest('dialog').close()">Close</button></div>
+<div class="bd">
+<p><b>Grid:</b> one tile = one large grid cell (2 m × 2 m × 2 m = 8 m³). Each tile holds one structure, one device, one cable, one pipe and one chute at the same time.</p>
+<p><b>Tools:</b> <kbd>B</kbd> brush · <kbd>L</kbd> line · <kbd>F</kbd> filled rect · <kbd>O</kbd> outline rect · <kbd>M</kbd> room (walls + floor) · <kbd>E</kbd> erase · <kbd>I</kbd> pick · <kbd>V</kbd> inspect. <kbd>R</kbd> rotates the device. Right/middle-drag or Space-drag pans, wheel zooms. Ctrl+Z / Ctrl+Y undo/redo.</p>
+<p><b>Rooms</b> are floor tiles enclosed by walls, windows or doors. A room touching empty space or an open frame is flagged as leaking. Devices dropped on bare ground get a floor automatically (except outdoor ones like solar panels).</p>
+<p><b>Power:</b> cables join to neighbouring cables. A device is powered by the cable on its own tile (or, failing that, a neighbouring one). Each network compares generation, demand and the weakest cable rating.</p>
+<p><b>Gas:</b> pipes join the same way; vents, pumps and tanks need a pipe. Liquid pipes are a separate class and never join gas pipes.</p>
+<p><b>Levels:</b> use the level tabs to design multiple decks. Analysis runs per level; stairs/ladders are markers only.</p>
+</div></dialog>
+
+<script>
+/* ============================ CATALOG ============================ */
+// w: + = generates, - = consumes (watts). All numbers are approximations and editable in-app.
+const ITEMS=[
+ // Structure
+ {id:'floor',name:'Floor Plate',layer:'s',cat:'Structure',kind:'floor',color:'#2c333d',glyph:'',desc:'Walkable deck. Holds atmosphere only when fully enclosed by walls, windows and doors.'},
+ {id:'frame',name:'Iron Frame',layer:'s',cat:'Structure',kind:'frame',color:'#6b5b45',glyph:'',desc:'Open scaffold. NOT airtight — cover with walls and floor.'},
+ {id:'sframe',name:'Steel Frame',layer:'s',cat:'Structure',kind:'frame',color:'#7b8696',glyph:'',desc:'Stronger open scaffold. Not airtight.'},
+ {id:'wall',name:'Iron Wall',layer:'s',cat:'Structure',kind:'barrier',color:'#8b94a1',glyph:'',desc:'Airtight wall panel.'},
+ {id:'cwall',name:'Composite Wall',layer:'s',cat:'Structure',kind:'barrier',color:'#b9c3d1',glyph:'',desc:'Airtight, sturdier, better insulation.'},
+ {id:'window',name:'Reinforced Window',layer:'s',cat:'Structure',kind:'barrier',color:'#5fb4d9',glyph:'',desc:'Airtight, lets light and view through.'},
+ {id:'door',name:'Door',layer:'s',cat:'Structure',kind:'barrier',door:true,color:'#e0a040',glyph:'',desc:'Seals when closed. Doors to vacuum must open into an airlock chamber with a pump/vent.'},
+ {id:'ladder',name:'Ladder / Stairs',layer:'s',cat:'Structure',kind:'floor',color:'#4a5560',glyph:'⇅',desc:'Marker for vertical travel between levels.'},
+ // Power generation / storage
+ {id:'solar',name:'Solar Panel',layer:'d',cat:'Power',color:'#4cc3ff',glyph:'SP',w:500,power:true,outdoor:true,tags:['gen'],desc:'Outdoor generator. Output varies with sun angle and atmosphere.'},
+ {id:'wind',name:'Wind Turbine',layer:'d',cat:'Power',color:'#7fe0c0',glyph:'WT',w:500,power:true,outdoor:true,tags:['gen'],desc:'Outdoor generator. Needs atmosphere and wind.'},
+ {id:'solidgen',name:'Solid Fuel Generator',layer:'d',cat:'Power',color:'#ff9b54',glyph:'SG',w:20000,power:true,tags:['gen'],desc:'Burns solid fuel. High output; needs refuelling.'},
+ {id:'stirling',name:'Stirling Engine',layer:'d',cat:'Power',color:'#ffb86b',glyph:'SE',w:20000,power:true,pipe:true,tags:['gen'],desc:'Heat-differential generator driven by gas pipes.'},
+ {id:'battery',name:'Station Battery',layer:'d',cat:'Power',color:'#a6e34f',glyph:'BT',w:0,power:true,tags:['buffer'],desc:'Buffers power through night / low output. Counts as a source for the “has power source” check.'},
+ // Atmospherics
+ {id:'tank',name:'Gas Tank',layer:'d',cat:'Atmospherics',color:'#9db8ff',glyph:'TK',w:0,pipe:true,tags:['source'],desc:'Stores gas on the pipe network.'},
+ {id:'pump',name:'Volume Pump',layer:'d',cat:'Atmospherics',color:'#6aa0ff',glyph:'PM',w:-200,power:true,pipe:true,tags:['source','pump'],desc:'Moves gas along pipes. Also pressurises/vents airlock chambers.'},
+ {id:'vent',name:'Active Vent',layer:'d',cat:'Atmospherics',color:'#5ed0c8',glyph:'AV',w:-20,power:true,pipe:true,tags:['vent'],desc:'Pushes pipe gas into the room (or pulls it out).'},
+ {id:'pvent',name:'Passive Vent',layer:'d',cat:'Atmospherics',color:'#8fd9d3',glyph:'PV',w:0,pipe:true,tags:['vent'],desc:'Unpowered vent; equalises pressure.'},
+ {id:'regulator',name:'Pressure Regulator',layer:'d',cat:'Atmospherics',color:'#7f8fff',glyph:'PR',w:0,pipe:true,desc:'Passes gas only above/below a set pressure.'},
+ {id:'filter',name:'Filtration Unit',layer:'d',cat:'Atmospherics',color:'#c8a4ff',glyph:'FL',w:-150,power:true,pipe:true,desc:'Scrubs CO₂ / pollutants using filters.'},
+ {id:'ac',name:'Air Conditioner',layer:'d',cat:'Atmospherics',color:'#6fd6ff',glyph:'AC',w:-300,power:true,pipe:true,desc:'Heats/cools pipe gas.'},
+ {id:'heater',name:'Wall Heater',layer:'d',cat:'Atmospherics',color:'#ff7a5c',glyph:'WH',w:-500,power:true,desc:'Room heater.'},
+ {id:'cooler',name:'Wall Cooler',layer:'d',cat:'Atmospherics',color:'#5cb8ff',glyph:'WC',w:-500,power:true,desc:'Room cooler.'},
+ {id:'sensor',name:'Gas Sensor',layer:'d',cat:'Atmospherics',color:'#d5e07a',glyph:'GS',w:-10,power:true,tags:['sensor'],desc:'Reads room atmosphere for logic.'},
+ // Industry
+ {id:'furnace',name:'Furnace',layer:'d',cat:'Industry',color:'#ff8a3d',glyph:'FU',w:-500,power:true,tags:['craft'],desc:'Smelts ore into ingots.'},
+ {id:'arc',name:'Arc Furnace',layer:'d',cat:'Industry',color:'#ff6b3d',glyph:'AF',w:-5000,power:true,tags:['craft'],desc:'High-power smelter for advanced alloys.'},
+ {id:'autolathe',name:'Autolathe',layer:'d',cat:'Industry',color:'#e8c15a',glyph:'AL',w:-300,power:true,tags:['craft'],desc:'Fabricates basic parts from ingots.'},
+ {id:'printer',name:'Electronics Printer',layer:'d',cat:'Industry',color:'#e8d95a',glyph:'EP',w:-300,power:true,tags:['craft'],desc:'Prints circuit boards and electronics.'},
+ {id:'bender',name:'Pipe Bender',layer:'d',cat:'Industry',color:'#d9b55a',glyph:'PB',w:-300,power:true,tags:['craft'],desc:'Forms pipes and plumbing parts.'},
+ {id:'toolmfr',name:'Tool Manufacturer',layer:'d',cat:'Industry',color:'#d4a35a',glyph:'TM',w:-300,power:true,tags:['craft'],desc:'Builds tools.'},
+ {id:'recycler',name:'Recycler',layer:'d',cat:'Industry',color:'#9fcf6a',glyph:'RC',w:-100,power:true,desc:'Breaks items down into ingots.'},
+ // Life support / habitat
+ {id:'light',name:'Wall Light',layer:'d',cat:'Habitat',color:'#fff08a',glyph:'LT',w:-10,power:true,tags:['light'],desc:'Lights the room.'},
+ {id:'console',name:'Console / Computer',layer:'d',cat:'Habitat',color:'#8ad0ff',glyph:'CN',w:-50,power:true,tags:['console'],desc:'Logic / control terminal.'},
+ {id:'bed',name:'Bed',layer:'d',cat:'Habitat',color:'#c98fd0',glyph:'BD',w:0,tags:['bed'],desc:'Sleep and save point.'},
+ {id:'locker',name:'Locker',layer:'d',cat:'Habitat',color:'#a0a8b5',glyph:'LK',w:0,tags:['storage'],desc:'Item storage.'},
+ {id:'hydro',name:'Hydroponics Tray',layer:'d',cat:'Habitat',color:'#5fd16a',glyph:'HY',w:-50,power:true,pipe:true,tags:['food'],desc:'Grows food. Needs water/gas and light.'},
+ // Cables
+ {id:'cable',name:'Cable',layer:'c',cat:'Cables',color:'#ffcf4a',rating:5000,glyph:'',desc:'Standard cable. Burns out if load exceeds its rating.'},
+ {id:'hcable',name:'Heavy Cable',layer:'c',cat:'Cables',color:'#ff8a3d',rating:100000,glyph:'',desc:'High-capacity trunk cable.'},
+ {id:'shcable',name:'Super Heavy Cable',layer:'c',cat:'Cables',color:'#ff5d5d',rating:500000,glyph:'',desc:'Very high-capacity trunk cable.'},
+ // Pipes
+ {id:'pipe',name:'Gas Pipe',layer:'p',cat:'Pipes',pclass:'gas',color:'#7fb7ff',glyph:'',desc:'Carries gas.'},
+ {id:'ipipe',name:'Insulated Gas Pipe',layer:'p',cat:'Pipes',pclass:'gas',color:'#cfd9e8',glyph:'',desc:'Gas pipe that resists heat exchange.'},
+ {id:'lpipe',name:'Liquid Pipe',layer:'p',cat:'Pipes',pclass:'liq',color:'#46d1c6',glyph:'',desc:'Carries liquids. Never joins gas pipes.'},
+ // Chutes
+ {id:'chute',name:'Chute',layer:'u',cat:'Logistics',color:'#c28bff',glyph:'',desc:'Moves items between machines.'}
+];
+const ITEM=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+const CATS=[...new Set(ITEMS.map(i=>i.cat))];
+const LAYERNAME={s:'Structure',d:'Devices',c:'Cables',p:'Pipes',u:'Chutes'};
+const TILE_VOL_L=8000, P_KPA=101.325, T_K=293.15, R_GAS=8.314;
+const NETCOL=['#4cc3ff','#ff7ac6','#9be564','#ffb347','#b28dff','#ff6b6b','#2ee6c5','#e6e24a'];
+
+/* ============================ STATE ============================ */
+const state={w:40,h:28,levels:[{name:'Level 0',cells:{}}],ov:{}};
+const view={lvl:0,cs:28,ox:20,oy:20,tool:'paint',sel:'wall',rot:0,overlay:'none',vis:{s:1,d:1,c:1,p:1,u:1},hover:null,tab:'insp',filter:''};
+let undoS=[],redoS=[],AN=null,drag=null,dirty=false;
+
+const val=it=>{const o=state.ov[it.id];return o!==undefined?o:(it.layer==='c'?it.rating:(it.w||0))};
+const K=(x,y)=>x+','+y;
+const inb=(x,y)=>x>=0&&y>=0&&x<state.w&&y<state.h;
+const lv=()=>state.levels[view.lvl];
+const N4=[[1,0],[0,1],[-1,0],[0,-1]];
+const fmtW=w=>Math.abs(w)>=1000?(w/1000).toFixed(w%1000?1:0)+' kW':w+' W';
+
+/* ============================ EDITING ============================ */
+function snapshot(){return JSON.stringify({w:state.w,h:state.h,levels:state.levels,ov:state.ov})}
+function restore(s){const o=JSON.parse(s);state.w=o.w;state.h=o.h;state.levels=o.levels;state.ov=o.ov||{};if(view.lvl>=state.levels.length)view.lvl=0;refresh()}
+function pushUndo(before){undoS.push(before);if(undoS.length>150)undoS.shift();redoS=[]}
+function undo(){if(!undoS.length)return;redoS.push(snapshot());restore(undoS.pop())}
+function redo(){if(!redoS.length)return;undoS.push(snapshot());restore(redoS.pop())}
+
+function setCell(x,y,item,rot){
+  if(!inb(x,y))return;
+  const cells=lv().cells,k=K(x,y);let c=cells[k]||(cells[k]={});
+  const L=item.layer;
+  if(L==='s'){
+    if(item.kind==='barrier'&&c.d){delete c.d;delete c.r}
+    c.s=item.id;
+  }else if(L==='d'){
+    if(c.s&&ITEM[c.s].kind!=='floor'&&!item.outdoor){ /* devices need a floor; replace wall/frame */ }
+    if(!item.outdoor&&(!c.s||ITEM[c.s].kind!=='floor'))c.s='floor';
+    c.d=item.id;c.r=rot;
+  }else c[L]=item.id;
+  dirty=true;
+}
+function eraseCell(x,y){
+  const cells=lv().cells,k=K(x,y),c=cells[k];if(!c)return;
+  for(const L of 'sdcpu')if(view.vis[L]){if(c[L]!==undefined){delete c[L];dirty=true}if(L==='d')delete c.r}
+  if(!c.s&&!c.d&&!c.c&&!c.p&&!c.u)delete cells[k];
+}
+function shapeCells(tool,a,b){
+  const out=[];const x0=Math.min(a.x,b.x),x1=Math.max(a.x,b.x),y0=Math.min(a.y,b.y),y1=Math.max(a.y,b.y);
+  if(tool==='line'){
+    if(Math.abs(b.x-a.x)>=Math.abs(b.y-a.y)){const s=Math.sign(b.x-a.x)||1;for(let x=a.x;x!==b.x+s;x+=s)out.push({x,y:a.y})}
+    else{const s=Math.sign(b.y-a.y)||1;for(let y=a.y;y!==b.y+s;y+=s)out.push({x:a.x,y})}
+  }else if(tool==='rectf'){for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)out.push({x,y})}
+  else if(tool==='recto'||tool==='room'){
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const edge=x===x0||x===x1||y===y0||y===y1;
+      if(edge)out.push({x,y,edge:true});else if(tool==='room')out.push({x,y,edge:false})}
+  }
+  return out;
+}
+function applyShape(tool,a,b){
+  const it=ITEM[view.sel];
+  for(const c of shapeCells(tool,a,b)){
+    if(tool==='room'){setCell(c.x,c.y,c.edge?(it.layer==='s'&&it.kind==='barrier'?it:ITEM.wall):ITEM.floor,0)}
+    else setCell(c.x,c.y,it,view.rot);
+  }
+}
+
+/* ============================ ANALYSIS ============================ */
+function cls(c){ // 0 void, 1 floor, 2 barrier
+  if(!c)return 0;const s=c.s?ITEM[c.s]:null;
+  if(s){return s.kind==='barrier'?2:s.kind==='floor'?1:0}
+  if(c.d&&!ITEM[c.d].outdoor)return 1;return 0;
+}
+function analyze(){
+  const A={levels:[],issues:[],bom:{},totals:{gen:0,dmd:0,rooms:0,sealed:0,leaking:0,tanks:0,pumps:0,vents:0,lights:0,beds:0,craft:0,food:0,storage:0,airlocks:0,extDoors:0,badDoors:0,unpowered:0,buffers:0}};
+  const T=A.totals;
+  state.levels.forEach((L,li)=>{
+    const cells=L.cells,keys=Object.keys(cells);
+    const get=(x,y)=>cells[K(x,y)];
+    const clsAt=(x,y)=>inb(x,y)?cls(get(x,y)):0;
+    const iss=(sev,x,y,msg)=>A.issues.push({sev,li,x,y,msg});
+    const lvl={rooms:[],roomOf:{},pnets:[],pOf:{},gnets:[],gOf:{}};
+    // BOM
+    for(const k of keys){const c=cells[k];for(const l of 'sdcpu')if(c[l]){A.bom[c[l]]=(A.bom[c[l]]||0)+1}}
+    // rooms
+    const seen=new Set();
+    for(const k of keys){
+      if(seen.has(k)||cls(cells[k])!==1)continue;
+      const [sx,sy]=k.split(',').map(Number),room={tiles:[],leak:null,doors:new Set(),devs:[],id:lvl.rooms.length};
+      const q=[[sx,sy]];seen.add(k);
+      while(q.length){const [x,y]=q.pop();room.tiles.push([x,y]);lvl.roomOf[K(x,y)]=room.id;
+        for(const [dx,dy] of N4){const nx=x+dx,ny=y+dy,c=clsAt(nx,ny);
+          if(c===1){const nk=K(nx,ny);if(!seen.has(nk)){seen.add(nk);q.push([nx,ny])}}
+          else if(c===0){if(!room.leak)room.leak=[x,y]}
+          else if(get(nx,ny).s&&ITEM[get(nx,ny).s].door)room.doors.add(K(nx,ny));
+        }}
+      lvl.rooms.push(room);
+    }
+    // cable nets
+    const bfs=(keyName,joinFn,store,own)=>{
+      const nets=[],of={};
+      for(const k of keys){const c=cells[k];if(!c[keyName]||of[k]!==undefined)continue;
+        const net={tiles:[],id:nets.length,pclass:c[keyName]&&ITEM[c[keyName]].pclass,devs:[]};nets.push(net);
+        const q=[k];of[k]=net.id;
+        while(q.length){const kk=q.pop();net.tiles.push(kk);const [x,y]=kk.split(',').map(Number);
+          for(const [dx,dy] of N4){const nk=K(x+dx,y+dy),nc=cells[nk];
+            if(nc&&nc[keyName]&&of[nk]===undefined&&joinFn(cells[kk][keyName],nc[keyName])){of[nk]=net.id;q.push(nk)}}}
+      }
+      return {nets,of};
+    };
+    const P=bfs('c',()=>true);lvl.pnets=P.nets;lvl.pOf=P.of;
+    const G=bfs('p',(a,b)=>ITEM[a].pclass===ITEM[b].pclass);lvl.gnets=G.nets;lvl.gOf=G.of;
+    P.nets.forEach(n=>{n.rating=Math.min(...n.tiles.map(k=>val(ITEM[cells[k].c])));n.gen=0;n.dmd=0;n.buf=false});
+    const attach=(x,y,of,nets,pred)=>{
+      const own=of[K(x,y)];if(own!==undefined&&pred(nets[own]))return nets[own];
+      for(const [dx,dy] of N4){const id=of[K(x+dx,y+dy)];if(id!==undefined&&pred(nets[id]))return nets[id]}
+      return null;
+    };
+    for(const k of keys){
+      const c=cells[k];if(!c.d)continue;const it=ITEM[c.d],[x,y]=k.split(',').map(Number);
+      const room=lvl.roomOf[k]!==undefined?lvl.rooms[lvl.roomOf[k]]:null;
+      if(room)room.devs.push(it);
+      const tg=it.tags||[];
+      if(tg.includes('light'))T.lights++;if(tg.includes('bed'))T.beds++;if(tg.includes('craft'))T.craft++;
+      if(tg.includes('food'))T.food++;if(tg.includes('storage'))T.storage++;if(it.id==='tank')T.tanks++;
+      if(it.id==='pump')T.pumps++;if(tg.includes('vent'))T.vents++;
+      if(it.power){
+        const net=attach(x,y,P.of,P.nets,()=>true);
+        if(!net){if(it.w!==0||!tg.includes('buffer')){T.unpowered++;iss('warn',x,y,`${it.name} has no cable${(val(it)<0)?' — it will not run':''}`)}}
+        else{net.devs.push(it);const w=val(it);if(w>0){net.gen+=w;T.gen+=w}else{net.dmd-=w;T.dmd-=w}if(tg.includes('buffer')){net.buf=true;T.buffers++}}
+      }
+      if(it.pipe){
+        const net=attach(x,y,G.of,G.nets,n=>n.pclass==='gas');
+        if(!net)iss('warn',x,y,`${it.name} is not connected to a gas pipe`);else net.devs.push(it);
+      }
+    }
+    // power net issues
+    P.nets.forEach(n=>{
+      const [x,y]=n.tiles[0].split(',').map(Number);n.at=[x,y];
+      if(n.dmd>0&&n.gen<=0&&!n.buf)iss('bad',x,y,`Power network #${n.id+1}: ${fmtW(n.dmd)} demand but no generation or battery`);
+      else if(n.dmd>n.gen&&n.gen>0)iss('warn',x,y,`Power network #${n.id+1}: demand ${fmtW(n.dmd)} exceeds generation ${fmtW(n.gen)}`);
+      if(Math.max(n.dmd,n.gen)>n.rating)iss('bad',x,y,`Power network #${n.id+1}: load ${fmtW(Math.max(n.dmd,n.gen))} exceeds weakest cable (${fmtW(n.rating)}) — cables will burn. Upgrade trunks to heavy cable.`);
+    });
+    G.nets.forEach(n=>{
+      const [x,y]=n.tiles[0].split(',').map(Number);n.at=[x,y];
+      if(n.pclass==='gas'){
+        const hasV=n.devs.some(d=>(d.tags||[]).includes('vent')||d.id==='ac'||d.id==='hydro');
+        const hasS=n.devs.some(d=>(d.tags||[]).includes('source'));
+        if(hasV&&!hasS)iss('warn',x,y,`Gas network #${n.id+1} has consumers but no tank or pump`);
+        if(!n.devs.length)iss('info',x,y,`Gas pipe network #${n.id+1} connects to nothing`);
+      }
+    });
+    // rooms
+    for(const r of lvl.rooms){
+      const n=r.tiles.length;r.vol=n*TILE_VOL_L/1000;r.mol=P_KPA*n*TILE_VOL_L/(R_GAS*T_K);
+      r.hasVent=r.devs.some(d=>(d.tags||[]).includes('vent'));r.hasPump=r.devs.some(d=>d.id==='pump'||d.id==='vent');
+      r.hasLight=r.devs.some(d=>(d.tags||[]).includes('light'));
+      const [x,y]=r.tiles[0];
+      T.rooms++;
+      if(r.leak){T.leaking++;iss('bad',r.leak[0],r.leak[1],`Room of ${n} tiles leaks to open space here — seal with walls/doors`)}
+      else{T.sealed++;
+        if(!r.hasVent&&n>2)iss('warn',x,y,`Sealed room (${n} tiles) has no vent — cannot be pressurised`);
+        if(!r.hasLight&&n>2)iss('info',x,y,`Sealed room (${n} tiles) has no light`);
+      }
+    }
+    // doors to outside
+    for(const k of keys){const c=cells[k];if(!c.s||!ITEM[c.s].door)continue;const [x,y]=k.split(',').map(Number);
+      let ext=false,inside=null;
+      for(const [dx,dy] of N4){const nx=x+dx,ny=y+dy,cc=clsAt(nx,ny);if(cc===0)ext=true;else if(cc===1)inside=lvl.rooms[lvl.roomOf[K(nx,ny)]]}
+      if(!ext)continue;T.extDoors++;
+      if(!inside){iss('warn',x,y,'Exterior door leads nowhere');T.badDoors++;continue}
+      if(inside.tiles.length<=4&&!inside.leak){ if(inside.hasPump)T.airlocks++;else{T.badDoors++;iss('warn',x,y,'Airlock chamber has no pump or active vent to cycle the air')} }
+      else{T.badDoors++;iss('warn',x,y,'Exterior door opens straight into a large room — put an airlock chamber (2 doors + pump) in front of it')}
+    }
+    A.levels.push(lvl);
+  });
+  if(T.dmd>0&&T.gen<T.dmd&&!T.buffers)A.issues.push({sev:'warn',li:0,x:0,y:0,msg:`Total demand ${fmtW(T.dmd)} exceeds total generation ${fmtW(T.gen)}`});
+  const order={bad:0,warn:1,info:2};A.issues.sort((a,b)=>order[a.sev]-order[b.sev]);
+  return A;
+}
+
+/* ============================ RENDER ============================ */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let CW=0,CH=0;
+function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;CW=r.width;CH=r.height;cv.width=r.width*d;cv.height=r.height*d;draw()}
+function netCol(i,bad){return bad?'#ff4d4d':NETCOL[i%NETCOL.length]}
+
+function render(g,cs,ox,oy,W,H,opt){
+  g.fillStyle='#0b0f14';g.fillRect(0,0,W,H);
+  const mw=state.w*cs,mh=state.h*cs;
+  g.fillStyle='#10161d';g.fillRect(ox,oy,mw,mh);
+  g.strokeStyle='#1a222c';g.lineWidth=1;g.beginPath();
+  for(let x=0;x<=state.w;x++){g.moveTo(ox+x*cs+.5,oy);g.lineTo(ox+x*cs+.5,oy+mh)}
+  for(let y=0;y<=state.h;y++){g.moveTo(ox,oy+y*cs+.5);g.lineTo(ox+mw,oy+y*cs+.5)}
+  g.stroke();
+  const L=state.levels[opt.lvl],cells=L.cells,AL=AN&&AN.levels[opt.lvl];
+  const X=x=>ox+x*cs,Y=y=>oy+y*cs;
+  // structure
+  if(opt.vis.s)for(const k in cells){const c=cells[k];if(!c.s)continue;const [x,y]=k.split(',').map(Number),it=ITEM[c.s];
+    g.fillStyle=it.color;
+    if(it.kind==='floor'){g.fillStyle=it.id==='ladder'?it.color:'#252c36';g.fillRect(X(x)+1,Y(y)+1,cs-1,cs-1);g.strokeStyle='#323b48';g.strokeRect(X(x)+2.5,Y(y)+2.5,cs-5,cs-5);
+      if(it.glyph){g.fillStyle='#cdd6e2';g.font=`${cs*.5}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(it.glyph,X(x)+cs/2,Y(y)+cs/2)}}
+    else if(it.kind==='frame'){g.strokeStyle=it.color;g.lineWidth=Math.max(1.5,cs/10);g.strokeRect(X(x)+3,Y(y)+3,cs-6,cs-6);g.beginPath();g.moveTo(X(x)+3,Y(y)+3);g.lineTo(X(x)+cs-3,Y(y)+cs-3);g.moveTo(X(x)+cs-3,Y(y)+3);g.lineTo(X(x)+3,Y(y)+cs-3);g.stroke();g.lineWidth=1}
+    else if(it.door){g.fillStyle='#2a2112';g.fillRect(X(x)+1,Y(y)+1,cs-1,cs-1);g.fillStyle=it.color;g.fillRect(X(x)+cs*.2,Y(y)+cs*.38,cs*.6,cs*.24);g.strokeStyle=it.color;g.strokeRect(X(x)+2.5,Y(y)+2.5,cs-5,cs-5)}
+    else if(it.id==='window'){g.fillStyle='#1d3a4a';g.fillRect(X(x)+1,Y(y)+1,cs-1,cs-1);g.strokeStyle=it.color;g.lineWidth=2;g.strokeRect(X(x)+3,Y(y)+3,cs-6,cs-6);g.lineWidth=1}
+    else{g.fillRect(X(x)+1,Y(y)+1,cs-1,cs-1)}}
+  // room overlay
+  if(opt.overlay==='rooms'&&AL){for(const r of AL.rooms){g.fillStyle=r.leak?'#ef5b5b55':'#4cc38a40';for(const [x,y] of r.tiles)g.fillRect(X(x)+1,Y(y)+1,cs-1,cs-1);
+    if(cs>=18){let sx=0,sy=0;r.tiles.forEach(t=>{sx+=t[0];sy+=t[1]});g.fillStyle='#fff';g.font=`bold ${Math.max(10,cs*.4)}px sans-serif`;g.textAlign='center';g.textBaseline='middle';
+      g.fillText(r.leak?'LEAK':`${r.vol} m³`,X(sx/r.tiles.length)+cs/2,Y(sy/r.tiles.length)+cs/2)}}}
+  // lines (pipes, chutes, cables)
+  const line=(key,off,width,colFn,vis)=>{if(!vis)return;
+    g.lineCap='round';g.lineWidth=width;
+    for(const k in cells){const c=cells[k];if(!c[key])continue;const [x,y]=k.split(',').map(Number);const col=colFn(k,c);
+      const cx=X(x)+cs/2+off,cy=Y(y)+cs/2+off;g.strokeStyle=col;g.fillStyle=col;
+      for(const [dx,dy] of [[1,0],[0,1]]){const n=cells[K(x+dx,y+dy)];if(n&&n[key]&&(key!=='p'||ITEM[n.p].pclass===ITEM[c.p].pclass)){g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+dx*cs,cy+dy*cs);g.stroke()}}
+      g.beginPath();g.arc(cx,cy,width*.6,0,7);g.fill()}
+    g.lineWidth=1};
+  line('p',cs*.14,Math.max(3,cs*.17),(k,c)=>opt.overlay==='gas'&&AL&&AL.gOf[k]!==undefined?netCol(AL.gOf[k]):ITEM[c.p].color,opt.vis.p);
+  line('u',-cs*.14,Math.max(3,cs*.15),(k,c)=>ITEM[c.u].color,opt.vis.u);
+  line('c',0,Math.max(2,cs*.1),(k,c)=>{if(opt.overlay==='power'&&AL&&AL.pOf[k]!==undefined){const n=AL.pnets[AL.pOf[k]];return netCol(n.id,Math.max(n.dmd,n.gen)>n.rating||(n.dmd>0&&n.gen<=0&&!n.buf))}return ITEM[c.c].color},opt.vis.c);
+  // devices
+  if(opt.vis.d)for(const k in cells){const c=cells[k];if(!c.d)continue;const [x,y]=k.split(',').map(Number),it=ITEM[c.d];
+    const px=X(x)+cs*.14,py=Y(y)+cs*.14,s=cs*.72;
+    g.fillStyle=it.color;g.beginPath();g.roundRect(px,py,s,s,cs*.12);g.fill();g.strokeStyle='#0008';g.stroke();
+    if(cs>=16){g.fillStyle='#111';g.font=`bold ${Math.max(9,cs*.33)}px monospace`;g.textAlign='center';g.textBaseline='middle';g.fillText(it.glyph,px+s/2,py+s/2)}
+    // facing notch
+    const r=c.r||0,cx=px+s/2,cy=py+s/2,a=[[1,0],[0,1],[-1,0],[0,-1]][r];
+    g.fillStyle='#111';g.beginPath();g.arc(cx+a[0]*s*.46,cy+a[1]*s*.46,Math.max(2,cs*.07),0,7);g.fill();
+    if(it.power&&AL&&AL.pOf[k]===undefined&&!(AL.pOf[K(x+1,y)]!==undefined||AL.pOf[K(x-1,y)]!==undefined||AL.pOf[K(x,y+1)]!==undefined||AL.pOf[K(x,y-1)]!==undefined)&&!(it.w===0)){g.strokeStyle='#ef5b5b';g.lineWidth=2;g.strokeRect(px-1,py-1,s+2,s+2);g.lineWidth=1}}
+  // preview / hover
+  if(opt.preview){g.globalAlpha=.55;for(const c of opt.preview){const it=ITEM[opt.previewItem];g.fillStyle=opt.tool==='erase'?'#ef5b5b':(it.color||'#fff');g.fillRect(X(c.x)+2,Y(c.y)+2,cs-4,cs-4)}g.globalAlpha=1}
+  if(opt.hover&&inb(opt.hover.x,opt.hover.y)){g.strokeStyle='#f5a524';g.lineWidth=2;g.strokeRect(X(opt.hover.x)+1,Y(opt.hover.y)+1,cs-2,cs-2);g.lineWidth=1}
+  g.strokeStyle='#3a4658';g.strokeRect(ox+.5,oy+.5,mw,mh);
+}
+let raf=0;
+function draw(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const d=window.devicePixelRatio||1;ctx.setTransform(d,0,0,d,0,0);
+  let preview=null;if(drag&&drag.shape){preview=shapeCells(view.tool,drag.a,drag.b)}
+  render(ctx,view.cs,view.ox,view.oy,CW,CH,{lvl:view.lvl,vis:view.vis,overlay:view.overlay,hover:view.hover,preview,previewItem:view.sel,tool:view.tool})})}
+
+/* ============================ UI ============================ */
+const TOOLS=[['paint','Brush','B'],['line','Line','L'],['rectf','Rect ■','F'],['recto','Rect □','O'],['room','Room','M'],['erase','Erase','E'],['pick','Pick','I'],['inspect','Inspect','V']];
+function buildTools(){const el=document.getElementById('tools');el.innerHTML='';
+  for(const [id,n,k] of TOOLS){const b=document.createElement('button');b.textContent=n;b.title=`${n} (${k})`;b.className=view.tool===id?'on':'';b.onclick=()=>{view.tool=id;buildTools()};el.appendChild(b)}}
+function buildToggles(){const el=document.getElementById('layerToggles');el.innerHTML='';
+  for(const L of 'sdcpu'){const l=document.createElement('label');l.className='chk';const i=document.createElement('input');i.type='checkbox';i.checked=!!view.vis[L];i.onchange=()=>{view.vis[L]=i.checked?1:0;draw()};l.append(i,LAYERNAME[L]);el.appendChild(l)}}
+function buildLevels(){const el=document.getElementById('levelTabs');el.innerHTML='';
+  state.levels.forEach((L,i)=>{const b=document.createElement('button');b.textContent=L.name;b.className=i===view.lvl?'on':'';b.onclick=()=>{view.lvl=i;buildLevels();refresh()};el.appendChild(b)});
+  const add=document.createElement('button');add.textContent='+';add.title='Add level';add.onclick=()=>{const b=snapshot();state.levels.push({name:'Level '+state.levels.length,cells:{}});pushUndo(b);view.lvl=state.levels.length-1;buildLevels();refresh()};el.appendChild(add);
+  if(state.levels.length>1){const del=document.createElement('button');del.textContent='−';del.title='Delete current level';del.onclick=()=>{if(!confirm('Delete '+lv().name+'?'))return;const b=snapshot();state.levels.splice(view.lvl,1);pushUndo(b);view.lvl=0;buildLevels();refresh()};el.appendChild(del)}}
+function buildPalette(){const el=document.getElementById('palette'),q=view.filter.toLowerCase();el.innerHTML='';
+  for(const cat of CATS){const list=ITEMS.filter(i=>i.cat===cat&&(!q||i.name.toLowerCase().includes(q)||cat.toLowerCase().includes(q)));if(!list.length)continue;
+    const h=document.createElement('div');h.className='cat';h.textContent=cat;el.appendChild(h);
+    for(const it of list){const d=document.createElement('div');d.className='item'+(view.sel===it.id?' sel':'');
+      const w=it.layer==='d'?val(it):null,wt=w===null?'':(w>0?`<span class="w gen">+${fmtW(w)}</span>`:w<0?`<span class="w">${fmtW(-w)}</span>`:'');
+      const wt2=it.layer==='c'?`<span class="w">${fmtW(val(it))}</span>`:wt;
+      d.innerHTML=`<div class="sw" style="background:${it.color}">${it.glyph||''}</div><div class="nm">${it.name}</div>${wt2}`;
+      d.title=it.desc;d.onclick=()=>{view.sel=it.id;if(['inspect','pick','erase'].includes(view.tool)){view.tool='paint';buildTools()}buildPalette();renderPane()};el.appendChild(d)}}}
+
+function cellInfo(x,y){const c=lv().cells[K(x,y)];const AL=AN&&AN.levels[view.lvl];
+  let h=`<h3>Tile ${x}, ${y} · ${lv().name}</h3>`;
+  if(!c)return h+'<div class="muted">Empty — open space.</div>';
+  const rows=[];for(const L of 'sdcpu')if(c[L])rows.push([LAYERNAME[L],ITEM[c[L]].name]);
+  h+=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
+  const rid=AL&&AL.roomOf[K(x,y)];
+  if(rid!==undefined){const r=AL.rooms[rid];h+=`<h3>Room</h3><div class="row"><span>Tiles</span><span>${r.tiles.length}</span></div><div class="row"><span>Volume</span><span>${r.vol} m³</span></div><div class="row"><span>Status</span><span style="color:var(--${r.leak?'bad':'ok'})">${r.leak?'Leaking':'Sealed'}</span></div>`}
+  if(c.d){const it=ITEM[c.d];h+=`<h3>${it.name}</h3><p class="muted">${it.desc}</p>`;if(it.layer==='d'&&(it.power))h+=`<div class="row"><span>${val(it)>=0?'Output':'Draw'}</span><span>${fmtW(Math.abs(val(it)))}</span></div>`}
+  else if(c.s)h+=`<h3>${ITEM[c.s].name}</h3><p class="muted">${ITEM[c.s].desc}</p>`;
+  const pn=AL&&AL.pOf[K(x,y)];if(pn!==undefined){const n=AL.pnets[pn];h+=`<h3>Power network #${n.id+1}</h3><div class="row"><span>Generation</span><span>${fmtW(n.gen)}</span></div><div class="row"><span>Demand</span><span>${fmtW(n.dmd)}</span></div><div class="row"><span>Weakest cable</span><span>${fmtW(n.rating)}</span></div>`}
+  return h;}
+
+function renderPane(){const el=document.getElementById('pane');
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===view.tab));
+  if(view.tab==='insp'){const it=ITEM[view.sel];let h=`<h3>Selected part</h3><div class="card"><b>${it.name}</b><div class="muted">${it.cat} · layer: ${LAYERNAME[it.layer]}</div><p>${it.desc}</p>`;
+    if(it.layer==='d')h+=`<div class="row"><span>${val(it)>=0?'Output':'Draw'}</span><span>${fmtW(Math.abs(val(it)))}</span></div>`;
+    if(it.layer==='c')h+=`<div class="row"><span>Max load</span><span>${fmtW(val(it))}</span></div>`;h+='</div>';
+    h+=view.hover&&inb(view.hover.x,view.hover.y)?cellInfo(view.hover.x,view.hover.y):'<div class="muted">Hover a tile to inspect it.</div>';el.innerHTML=h;return}
+  if(!AN)return;const T=AN.totals;
+  if(view.tab==='bom'){const rows=Object.entries(AN.bom).map(([id,n])=>[ITEM[id],n]).sort((a,b)=>CATS.indexOf(a[0].cat)-CATS.indexOf(b[0].cat));
+    let h='<h3>Parts across all levels</h3><table><tr><th>Part</th><th>Type</th><th class="n">Qty</th></tr>';
+    for(const [it,n] of rows)h+=`<tr><td>${it.name}</td><td class="muted">${it.cat}</td><td class="n">${n}</td></tr>`;h+='</table>';
+    if(!rows.length)h='<div class="muted">Nothing placed yet.</div>';el.innerHTML=h;return}
+  // analysis
+  const ck=(ok,label,opt)=>`<div class="ck ${ok?'ok':opt?'opt':'no'}"><i>${ok?'✓':opt?'○':'✗'}</i><span>${label}</span></div>`;
+  let h='<h3>Base essentials</h3>'+
+   ck(T.sealed>0&&!T.leaking,'Sealed, non-leaking habitat')+
+   ck(T.extDoors>0&&!T.badDoors,'Airlock between habitat and outside')+
+   ck(T.gen>0,'Power generation')+ck(T.gen>=T.dmd&&T.dmd>0||T.buffers>0&&T.gen>0,'Generation covers demand')+
+   ck(T.tanks+T.pumps>0,'Gas source (tank / pump)')+ck(T.vents>0,'Vent to pressurise rooms')+
+   ck(T.lights>0,'Lighting')+ck(T.beds>0,'Bed')+
+   ck(T.storage>0,'Storage locker',true)+ck(T.craft>0,'Crafting / smelting',true)+ck(T.food>0,'Food production',true);
+  const pct=T.gen?Math.min(100,T.dmd/T.gen*100):(T.dmd?100:0);
+  h+=`<h3>Power budget</h3><div class="card"><div class="row"><span>Generation</span><span>${fmtW(T.gen)}</span></div><div class="row"><span>Demand</span><span>${fmtW(T.dmd)}</span></div><div class="bar"><b style="width:${pct}%;background:var(--${pct>100||(T.dmd&&!T.gen)?'bad':pct>80?'warn':'ok'})"></b></div><div class="muted">${T.buffers?T.buffers+' battery unit(s) buffering':'No battery: nights/dust storms will brown out solar-only bases.'}</div></div>`;
+  h+='<h3>Rooms</h3>';
+  const rs=[];AN.levels.forEach((l,li)=>l.rooms.forEach(r=>rs.push([li,r])));
+  if(!rs.length)h+='<div class="muted">No enclosed floor space yet. Try the Room tool (M).</div>';
+  else{h+='<table><tr><th>Room</th><th class="n">Tiles</th><th class="n">m³</th><th class="n">Gas to fill*</th></tr>';
+    rs.forEach(([li,r],i)=>{h+=`<tr style="cursor:pointer" data-go="${li},${r.tiles[0][0]},${r.tiles[0][1]}"><td>${state.levels[li].name.replace('Level ','L')}·${i+1} ${r.leak?'<span style="color:var(--bad)">leak</span>':'<span style="color:var(--ok)">sealed</span>'}</td><td class="n">${r.tiles.length}</td><td class="n">${r.vol}</td><td class="n">${r.mol.toFixed(0)} mol</td></tr>`});
+    h+='</table><div class="muted" style="margin-top:4px">*to reach ~101 kPa at 20 °C. Aim for ≈21% O₂ / 79% N₂ (O₂ partial pressure ≳16 kPa), CO₂ near zero.</div>'}
+  h+=`<h3>Issues (${AN.issues.length})</h3>`;
+  if(!AN.issues.length)h+='<div class="muted">No problems detected.</div>';
+  AN.issues.slice(0,60).forEach(i=>{h+=`<div class="iss ${i.sev}" data-go="${i.li},${i.x},${i.y}"><span>${i.sev==='bad'?'⛔':i.sev==='warn'?'⚠':'ℹ'}</span><span>${i.msg}<br><span class="muted">${state.levels[i.li].name} · ${i.x}, ${i.y}</span></span></div>`});
+  el.innerHTML=h;
+  el.querySelectorAll('[data-go]').forEach(e=>e.onclick=()=>{const [l,x,y]=e.dataset.go.split(',').map(Number);view.lvl=l;view.ox=CW/2-(x+.5)*view.cs;view.oy=CH/2-(y+.5)*view.cs;view.hover={x,y};buildLevels();draw()});
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{view.tab=b.dataset.t;renderPane()});
+
+function refresh(){AN=analyze();buildPalette();renderPane();draw();try{localStorage.setItem('stationeers_designer_v1',snapshot())}catch(e){}}
+
+/* ============================ INPUT ============================ */
+const cellOf=e=>{const r=cv.getBoundingClientRect();return{x:Math.floor((e.clientX-r.left-view.ox)/view.cs),y:Math.floor((e.clientY-r.top-view.oy)/view.cs)}};
+let spaceDown=false;
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId);const c=cellOf(e);
+  if(e.button===1||e.button===2||spaceDown){drag={pan:true,sx:e.clientX,sy:e.clientY,ox:view.ox,oy:view.oy};return}
+  if(e.button!==0)return;
+  const t=view.tool;
+  if(t==='pick'){const cell=lv().cells[K(c.x,c.y)];if(cell){const id=cell.d||cell.s||cell.c||cell.p||cell.u;if(id){view.sel=id;if(cell.d)view.rot=cell.r||0;view.tool='paint';buildTools();buildPalette();renderPane()}}return}
+  if(t==='inspect'){view.hover=c;renderPane();draw();return}
+  if(!inb(c.x,c.y))return;
+  drag={before:snapshot(),a:c,b:c,shape:['line','rectf','recto','room'].includes(t)};dirty=false;
+  if(!drag.shape){t==='erase'?eraseCell(c.x,c.y):setCell(c.x,c.y,ITEM[view.sel],view.rot);draw()}else draw();
+});
+cv.addEventListener('pointermove',e=>{
+  const c=cellOf(e);
+  if(drag&&drag.pan){view.ox=drag.ox+e.clientX-drag.sx;view.oy=drag.oy+e.clientY-drag.sy;draw();return}
+  if(!view.hover||view.hover.x!==c.x||view.hover.y!==c.y){view.hover=c;if(view.tab==='insp')renderPane();document.getElementById('hud').textContent=inb(c.x,c.y)?`${c.x}, ${c.y}  ·  ${lv().name}  ·  tile = 2 m`:''}
+  if(drag&&!drag.pan){
+    if(drag.shape)drag.b={x:Math.max(0,Math.min(state.w-1,c.x)),y:Math.max(0,Math.min(state.h-1,c.y))};
+    else if(inb(c.x,c.y)){view.tool==='erase'?eraseCell(c.x,c.y):setCell(c.x,c.y,ITEM[view.sel],view.rot)}
+  }
+  draw();
+});
+cv.addEventListener('pointerup',e=>{
+  if(!drag)return;const d=drag;drag=null;if(d.pan)return;
+  if(d.shape)applyShape(view.tool,d.a,d.b);
+  if(dirty){pushUndo(d.before);dirty=false;refresh()}else draw();
+});
+cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  const f=e.deltaY<0?1.12:1/1.12,ncs=Math.max(8,Math.min(80,view.cs*f)),k=ncs/view.cs;
+  view.ox=mx-(mx-view.ox)*k;view.oy=my-(my-view.oy)*k;view.cs=ncs;draw()},{passive:false});
+addEventListener('keydown',e=>{
+  if(e.target.matches('input,select,textarea'))return;
+  if(e.code==='Space'){spaceDown=true;e.preventDefault();return}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return}
+  const map={b:'paint',l:'line',f:'rectf',o:'recto',m:'room',e:'erase',i:'pick',v:'inspect'};
+  const k=e.key.toLowerCase();
+  if(map[k]){view.tool=map[k];buildTools()}
+  else if(k==='r'){view.rot=(view.rot+1)%4;draw()}
+  else if(k==='escape'){drag=null;draw()}
+  else if(k==='+'||k==='='){view.cs=Math.min(80,view.cs*1.15);draw()}
+  else if(k==='-'){view.cs=Math.max(8,view.cs/1.15);draw()}
+});
+addEventListener('keyup',e=>{if(e.code==='Space')spaceDown=false});
+addEventListener('resize',resize);
+
+/* ============================ FILE / MISC ============================ */
+document.getElementById('undo').onclick=undo;document.getElementById('redo').onclick=redo;
+document.getElementById('rot').onclick=()=>{view.rot=(view.rot+1)%4;draw()};
+document.getElementById('overlay').onchange=e=>{view.overlay=e.target.value;draw()};
+document.getElementById('search').oninput=e=>{view.filter=e.target.value;buildPalette()};
+document.getElementById('clear').onclick=()=>{if(!confirm('Clear everything?'))return;const b=snapshot();state.levels=[{name:'Level 0',cells:{}}];view.lvl=0;pushUndo(b);buildLevels();refresh()};
+document.getElementById('save').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([snapshot()],{type:'application/json'}));a.download='stationeers-base.json';a.click()};
+document.getElementById('load').onclick=()=>document.getElementById('file').click();
+document.getElementById('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const t=await f.text();JSON.parse(t);const b=snapshot();restore(t);pushUndo(b);buildLevels()}catch(err){alert('Could not read that file: '+err.message)}e.target.value=''};
+document.getElementById('png').onclick=()=>{const cs=32,W=state.w*cs+20,H=state.h*cs+20,c=document.createElement('canvas');c.width=W;c.height=H;
+  render(c.getContext('2d'),cs,10,10,W,H,{lvl:view.lvl,vis:view.vis,overlay:view.overlay});
+  c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='stationeers-base.png';a.click()})};
+document.getElementById('help').onclick=()=>document.getElementById('dlgHelp').showModal();
+document.getElementById('catalog').onclick=()=>{
+  const body=document.getElementById('catBody');let h='<table><tr><th>Part</th><th>Value (W)</th><th></th></tr>';
+  for(const it of ITEMS.filter(i=>i.layer==='c'||(i.layer==='d'&&i.power)))h+=`<tr><td>${it.name}<div class="muted">${it.layer==='c'?'max load':'+ generates / − consumes'}</div></td><td><input type="number" data-id="${it.id}" value="${val(it)}"></td><td><button data-reset="${it.id}">reset</button></td></tr>`;
+  body.innerHTML=h+'</table>';
+  body.querySelectorAll('input').forEach(i=>i.onchange=()=>{const it=ITEM[i.dataset.id],v=Number(i.value),def=it.layer==='c'?it.rating:it.w;if(v===def)delete state.ov[it.id];else state.ov[it.id]=v;refresh()});
+  body.querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{delete state.ov[b.dataset.reset];document.getElementById('catalog').onclick()});
+  const d=document.getElementById('dlgCat');if(!d.open)d.showModal();
+};
+
+function starter(){
+  const b=snapshot();state.levels=[{name:'Level 0',cells:{}}];view.lvl=0;
+  const S=(x,y,id,r=0)=>setCell(x,y,ITEM[id],r),
+        line=(x0,y0,x1,y1,id)=>{for(const c of shapeCells('line',{x:x0,y:y0},{x:x1,y:y1}))S(c.x,c.y,id)};
+  // hab
+  for(const c of shapeCells('room',{x:8,y:7},{x:19,y:14}))S(c.x,c.y,c.edge?'cwall':'floor');
+  for(let x=9;x<=18;x++)S(x,11,'floor');
+  S(19,10,'door');                                   // inner airlock door
+  S(20,10,'floor');S(20,9,'wall');S(20,11,'wall');S(21,9,'wall');S(21,11,'wall');S(21,10,'door');S(20,10,'vent',0); // chamber
+  S(14,7,'window');S(15,7,'window');
+  // power: solar field, trunk, spine
+  for(let x=9;x<=14;x++){S(x,3,'cable');S(x,3,'solar')}
+  line(15,3,15,12,'cable');line(9,12,18,12,'cable');line(10,13,10,13,'cable');
+  S(16,12,'battery');
+  // life support
+  line(9,13,14,13,'pipe');S(9,13,'tank');S(10,13,'pump');S(14,13,'vent');line(14,12,14,13,'cable');
+  S(11,13,'regulator');
+  S(10,12,'light');S(17,12,'console');S(18,12,'autolathe');S(12,12,'light');S(17,8,'bed',1);S(18,8,'locker',2);S(9,8,'hydro');
+  line(9,8,9,13,'pipe');line(9,8,9,12,'cable');
+  line(15,10,20,10,'cable');line(14,11,14,13,'pipe');line(14,11,20,11,'pipe');line(20,10,20,11,'pipe');
+  pushUndo(b);view.ox=60;view.oy=40;view.cs=Math.min(30,Math.max(16,Math.floor(Math.min(CW/(state.w*.7),CH/(state.h*.7)))));buildLevels();refresh();
+}
+document.getElementById('starter').onclick=starter;
+
+/* ============================ INIT ============================ */
+(function init(){
+  try{const s=localStorage.getItem('stationeers_designer_v1');if(s){const o=JSON.parse(s);state.w=o.w;state.h=o.h;state.levels=o.levels;state.ov=o.ov||{}}}catch(e){}
+  buildTools();buildToggles();buildLevels();resize();refresh();
+  if(!Object.keys(lv().cells).length)starter();
+})();
+</script>
+</body>
+</html>
