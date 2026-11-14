@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="75%">
+      <stop offset="0" stop-color="#2a0f55"/>
+      <stop offset="0.6" stop-color="#120626"/>
+      <stop offset="1" stop-color="#05010d"/>
+    </radialGradient>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff2bd6"><animate attributeName="stop-color" values="#ff2bd6;#00f0ff;#7cff3a;#ff2bd6" dur="6s" repeatCount="indefinite"/></stop>
+      <stop offset="0.5" stop-color="#8a5cff"><animate attributeName="stop-color" values="#8a5cff;#ff2bd6;#00f0ff;#8a5cff" dur="6s" repeatCount="indefinite"/></stop>
+      <stop offset="1" stop-color="#00f0ff"><animate attributeName="stop-color" values="#00f0ff;#7cff3a;#ff2bd6;#00f0ff" dur="6s" repeatCount="indefinite"/></stop>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="a"/>
+      <feGaussianBlur stdDeviation="16" result="b"/>
+      <feGaussianBlur stdDeviation="34" result="c"/>
+      <feMerge><feMergeNode in="c"/><feMergeNode in="b"/><feMergeNode in="a"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter>
+    <path id="spark" d="M0,-18 L4,-4 L18,0 L4,4 L0,18 L-4,4 L-18,0 L-4,-4 Z"/>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- grid -->
+  <g stroke="#8a5cff" stroke-opacity="0.12" stroke-width="2">
+    <path d="M0 700H1024M0 760H1024M0 830H1024M0 910H1024M0 1000H1024"/>
+    <path d="M512 640L-200 1024M512 640L100 1024M512 640L330 1024M512 640L512 1024M512 640L694 1024M512 640L924 1024M512 640L1224 1024"/>
+  </g>
+  <!-- halo -->
+  <ellipse cx="512" cy="390" rx="360" ry="280" fill="url(#neon)" opacity="0.45" filter="url(#soft)">
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2.4s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- mascot -->
+  <g transform="translate(512 400) rotate(-6) translate(-512 -400) translate(192 150) scale(3.2)" filter="url(#glow)">
+    <animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;0 -6;0 0" dur="2.4s" repeatCount="indefinite"/>
+    <path d="M40,30 C60,18 80,14 100,14 C120,14 140,18 160,30 C180,50 190,90 192,125 C170,140 150,146 140,146 L131,130 C120,133 80,133 69,130 L60,146 C50,146 30,140 8,125 C10,90 20,50 40,30 Z"
+          fill="#0d0420" fill-opacity="0.85" stroke="url(#neon)" stroke-width="7" stroke-linejoin="round"/>
+    <ellipse cx="68" cy="88" rx="15" ry="20" fill="url(#neon)"/>
+    <ellipse cx="132" cy="88" rx="15" ry="20" fill="url(#neon)"/>
+    <ellipse cx="72" cy="82" rx="5" ry="7" fill="#fff"/>
+    <ellipse cx="136" cy="82" rx="5" ry="7" fill="#fff"/>
+  </g>
+
+  <!-- text -->
+  <g transform="rotate(-4 512 800)" text-anchor="middle" font-family="Impact, 'Arial Black', Haettenschweiler, sans-serif" font-weight="900">
+    <text x="512" y="775" font-size="136" letter-spacing="6" fill="none" stroke="url(#neon)" stroke-width="5" filter="url(#glow)">STATIONER</text>
+    <text x="512" y="775" font-size="136" letter-spacing="6" fill="#fff" fill-opacity="0.92">STATIONER</text>
+    <text x="512" y="880" font-size="82" letter-spacing="26" fill="none" stroke="url(#neon)" stroke-width="3.5" filter="url(#glow)">COMMUNITY</text>
+    <text x="512" y="880" font-size="82" letter-spacing="26" fill="#fff" fill-opacity="0.9">COMMUNITY</text>
+  </g>
+
+  <!-- sparkles -->
+  <g fill="#fff" filter="url(#glow)">
+    <use href="#spark" x="150" y="170"><animateTransform attributeName="transform" type="scale" values="1;1.8;1" dur="1.8s" repeatCount="indefinite"/></use>
+    <use href="#spark" x="880" y="230" transform="scale(.8)"/>
+    <use href="#spark" x="120" y="620" transform="scale(.7)"/>
+    <use href="#spark" x="900" y="600" transform="scale(1.1)"><animate attributeName="opacity" values="1;.2;1" dur="1.3s" repeatCount="indefinite"/></use>
+    <use href="#spark" x="800" y="90" transform="scale(.6)"/>
+  </g>
+</svg>
